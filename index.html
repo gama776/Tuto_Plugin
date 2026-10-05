@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tuto Plugin IntelliJ IDEA — SAE A3-S5</title>
+  <meta name="description" content="Tutoriel complet pour créer un plugin IntelliJ IDEA : création du projet, structure des fichiers, et lancement du plugin. SAE A3-S5 IUT Informatique." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <span class="nav-logo">⚙️</span>
+        <span class="nav-title">IntelliJ Plugin</span>
+        <span class="nav-badge">SAE A3-S5</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#intro"     class="nav-link">Introduction</a></li>
+        <li><a href="#create"    class="nav-link">Créer</a></li>
+        <li><a href="#java"      class="nav-link">Java</a></li>
+        <li><a href="#structure" class="nav-link">Structure</a></li>
+        <li><a href="#test"      class="nav-link">Tester</a></li>
+        <li>
+          <a href="annexe.html" class="nav-cta" id="btn-annexe">
+            📄 Documentation
+          </a>
+        </li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <header class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-meta">
+        <span class="hero-chip">IUT Informatique</span>
+        <span class="hero-chip">SAE A3 — Semestre 5</span>
+      </div>
+      <h1 class="hero-title">
+        Créer un <span class="gradient-text">Plugin IntelliJ</span>
+      </h1>
+      <p class="hero-subtitle">
+        Guide pas-à-pas pour développer votre première extension IntelliJ IDEA,
+        de la création du projet jusqu'au test dans le sandbox.
+      </p>
+      <div class="hero-authors">
+        <div class="author-avatar">SM</div>
+        <div class="author-avatar">AF</div>
+        <div class="hero-authors-text">
+          <strong>Saksouk Mahdi</strong> &amp; <strong>Aubert Florian</strong>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <a href="#intro" class="btn btn-primary" id="btn-start">
+          Commencer le tutoriel
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </a>
+        <a href="annexe.html" class="btn btn-ghost" id="btn-doc">
+          Voir la documentation
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll-hint">
+      <div class="scroll-dot"></div>
+    </div>
+  </header>
+
+  <!-- ── PROGRESS BAR ── -->
+  <div class="progress-bar-wrapper">
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-steps">
+      <a href="#intro"     class="pstep active" data-step="0">Introduction</a>
+      <a href="#create"    class="pstep"        data-step="1">1. Créer</a>
+      <a href="#java"      class="pstep"        data-step="2">2. Java</a>
+      <a href="#structure" class="pstep"        data-step="3">3. Structure</a>
+      <a href="#test"      class="pstep"        data-step="4">4. Tester</a>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <main class="main-content">
+
+    <!-- SECTION 0 : INTRODUCTION -->
+    <section class="tuto-section" id="intro">
+      <div class="section-inner">
+        <div class="section-label">Introduction</div>
+        <h2 class="section-title">À propos de ce tutoriel</h2>
+        <p class="section-lead">
+          Ce tutoriel explique pas à pas comment créer un plugin IntelliJ IDEA :
+          de la création du projet jusqu'à son test dans l'IDE. Il s'adresse à des
+          étudiants qui connaissent déjà <strong>Java</strong>, mais qui n'ont jamais
+          développé d'extension pour un IDE.
+        </p>
+        <div class="info-cards">
+          <div class="info-card" id="card-goal">
+            <div class="info-card-icon">🎯</div>
+            <h3>Objectif</h3>
+            <p>Créer, structurer et lancer un plugin IntelliJ fonctionnel.</p>
+          </div>
+          <div class="info-card" id="card-prereq">
+            <div class="info-card-icon">📚</div>
+            <h3>Prérequis</h3>
+            <p>Connaissances Java de base. Aucune expérience de plugin nécessaire.</p>
+          </div>
+          <div class="info-card" id="card-result">
+            <div class="info-card-icon">✅</div>
+            <h3>Résultat</h3>
+            <p>Vous saurez où se trouve chaque élément et comment le lancer.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info" id="callout-intro-intellij">
+          <div class="callout-icon">ℹ️</div>
+          <div>
+            <strong>Note sur le module Java :</strong> Dans l'écosystème IntelliJ, le langage Java
+            est techniquement considéré comme un plugin (une extension). JetBrains a extrait le
+            moteur Java du noyau de l'IDE dans un module séparé : <code>com.intellij.java</code>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 : CRÉER LE PROJET -->
+    <section class="tuto-section alt-bg" id="create">
+      <div class="section-inner">
+        <div class="section-label">Étape 1</div>
+        <h2 class="section-title">Créer le projet</h2>
+        <p class="section-lead">
+          Suivez ces étapes pour initialiser votre projet de plugin dans IntelliJ IDEA.
+        </p>
+
+        <div class="callout callout-warning" id="callout-devkit">
+          <div class="callout-icon">⚠️</div>
+          <div>
+            Si <strong>IDE Plugin</strong> n'est pas affiché, allez dans
+            <em>more via plugins…</em>, installez <strong>DevKit</strong> et relancez l'IDE.
+          </div>
+        </div>
+
+        <ol class="steps-list" id="steps-create">
+          <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <h4>Ouvrir le dialogue de création</h4>
+              <p>Ouvrez IntelliJ IDEA et allez dans <kbd>File</kbd> → <kbd>New</kbd> → <kbd>Project…</kbd></p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <h4>Sélectionner le type de projet</h4>
+              <p>Sélectionnez <strong>IDE Plugin</strong> dans le menu de gauche.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <h4>Nommer le projet</h4>
+              <p>Donnez un <strong>Nom</strong> à votre projet et indiquez son emplacement.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <h4>Renseigner Group et Artifact</h4>
+              <p>Renseignez le <strong>Group</strong> (ex : <code>com.example</code>) et l'<strong>Artifact</strong>.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">5</div>
+            <div class="step-body">
+              <h4>Choisir le JDK</h4>
+              <p>Choisissez un JDK compatible (<strong>Java 21</strong> ou selon la version ciblée).</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">6</div>
+            <div class="step-body">
+              <h4>Désactiver le code d'exemple</h4>
+              <p>Décochez l'option <strong>"Add sample code"</strong>.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">7</div>
+            <div class="step-body">
+              <h4>Finaliser</h4>
+              <p>Cliquez sur <strong>Next</strong> pour créer le projet.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="concept-grid">
+          <div class="concept-card" id="concept-artifact">
+            <div class="concept-tag">Concept</div>
+            <h3>L'Artifact</h3>
+            <p>
+              C'est le nom technique de votre projet ou de votre plugin.
+              C'est le nom du fichier final (souvent un fichier <code>.jar</code> ou <code>.zip</code>)
+              qui sera généré et installé dans l'IDE.
+            </p>
+          </div>
+          <div class="concept-card" id="concept-group">
+            <div class="concept-tag">Concept</div>
+            <h3>Le Group</h3>
+            <p>
+              Identifie l'organisation, l'entreprise ou l'auteur qui crée le plugin.
+              Il suit généralement la structure inversée d'un nom de domaine internet
+              pour garantir son unicité.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 : JAVA -->
+    <section class="tuto-section" id="java">
+      <div class="section-inner">
+        <div class="section-label">Étape 2</div>
+        <h2 class="section-title">Mettre en place Java</h2>
+        <p class="section-lead">
+          Une fois le projet créé, attendez la fin de l'initialisation, puis configurez
+          la structure Java.
+        </p>
+
+        <div class="tree-container" id="tree-java">
+          <div class="tree-title">Structure après création</div>
+          <div class="file-tree">
+            <div class="tree-node root">📁 MonPlugin/</div>
+            <div class="tree-node l1">📁 src/</div>
+            <div class="tree-node l2">📁 main/</div>
+            <div class="tree-node l3 highlight-new">📁 java/ <span class="badge-new">À créer</span></div>
+            <div class="tree-node l4 highlight-pkg">📦 fr.umontpellier.iut <span class="badge-new">Package à ajouter</span></div>
+            <div class="tree-node l3">📁 resources/</div>
+            <div class="tree-node l4">📁 META-INF/</div>
+            <div class="tree-node l5">📄 plugin.xml</div>
+            <div class="tree-node l1">📁 gradle/</div>
+            <div class="tree-node l1">📄 build.gradle.kts</div>
+            <div class="tree-node l1">📄 settings.gradle.kts</div>
+          </div>
+        </div>
+
+        <ol class="steps-list" id="steps-java">
+          <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <h4>Créer le dossier java</h4>
+              <p>Ajoutez un dossier <code>java</code> dans <code>src/main/</code>.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <h4>Ajouter un package</h4>
+              <p>Dans le dossier <code>java/</code>, ajoutez un package, par exemple <code>fr.umontpellier.iut</code>.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <h4>Développer votre plugin</h4>
+              <p>Vous pouvez maintenant développer votre plugin IntelliJ IDEA.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- SECTION 3 : STRUCTURE -->
+    <section class="tuto-section alt-bg" id="structure">
+      <div class="section-inner">
+        <div class="section-label">Étape 3</div>
+        <h2 class="section-title">Structure des dossiers et fichiers</h2>
+        <p class="section-lead">
+          Une fois le projet chargé, IntelliJ a généré une arborescence.
+          Voici le rôle de chaque élément.
+        </p>
+
+        <!-- Arborescence complète -->
+        <div class="tree-container full-tree" id="full-tree">
+          <div class="tree-title">Arborescence complète du projet</div>
+          <div class="file-tree">
+            <div class="tree-node root">📁 MonPlugin/</div>
+            <div class="tree-node l1 interactive" data-desc="readme">📄 README.md</div>
+            <div class="tree-node l1 interactive" data-desc="build-gradle">📄 build.gradle.kts</div>
+            <div class="tree-node l1 interactive" data-desc="settings-gradle">📄 settings.gradle.kts</div>
+            <div class="tree-node l1 interactive" data-desc="gradle-props">📄 gradle.properties</div>
+            <div class="tree-node l1 interactive" data-desc="gradlew">📄 gradlew / gradlew.bat</div>
+            <div class="tree-node l1">📁 gradle/</div>
+            <div class="tree-node l1">📁 src/</div>
+            <div class="tree-node l2">📁 main/</div>
+            <div class="tree-node l3 interactive" data-desc="src-java">📁 java/</div>
+            <div class="tree-node l4">📦 fr.umontpellier.iut/</div>
+            <div class="tree-node l3 interactive" data-desc="src-resources">📁 resources/</div>
+            <div class="tree-node l4">📁 META-INF/</div>
+            <div class="tree-node l5 interactive" data-desc="plugin-xml">📄 plugin.xml</div>
+            <div class="tree-node l5">🎨 pluginIcon.svg</div>
+            <div class="tree-node l2">📁 test/</div>
+            <div class="tree-node l3 interactive" data-desc="src-test">📁 java/</div>
+            <div class="tree-node l1">📁 build/ <span class="badge-ignore">ignoré</span></div>
+          </div>
+        </div>
+
+        <!-- Panel de description des fichiers -->
+        <div class="file-desc-panel" id="file-desc-panel">
+          <div class="file-desc-placeholder">
+            👆 Cliquez sur un élément de l'arborescence pour voir sa description
+          </div>
+          <div class="file-desc-content" id="file-desc-content" style="display:none">
+            <h4 id="file-desc-title"></h4>
+            <p id="file-desc-text"></p>
+          </div>
+        </div>
+
+        <!-- Fichiers clés -->
+        <h3 class="subsection-title">Les fichiers clés</h3>
+        <div class="file-cards" id="file-cards">
+
+          <div class="file-card" id="fc-readme">
+            <div class="file-card-header">
+              <span class="file-icon">📄</span>
+              <code>README.md</code>
+            </div>
+            <p>
+              Généré avec le projet. Ce n'est pas un fichier technique : le plugin
+              fonctionne sans lui. Il rappelle les premières étapes et contient des
+              liens vers la documentation officielle JetBrains.
+            </p>
+          </div>
+
+          <div class="file-card" id="fc-build">
+            <div class="file-card-header">
+              <span class="file-icon">⚙️</span>
+              <code>build.gradle.kts</code>
+            </div>
+            <p>
+              Le fichier le plus important côté build. Déclare les plugins Gradle,
+              la version d'IntelliJ ciblée (bloc <code>intellijPlatform</code>),
+              les dépendances et la version de Java.
+            </p>
+          </div>
+
+          <div class="file-card" id="fc-settings">
+            <div class="file-card-header">
+              <span class="file-icon">⚙️</span>
+              <code>settings.gradle.kts</code>
+            </div>
+            <p>Contient le nom du projet Gradle.</p>
+          </div>
+
+          <div class="file-card" id="fc-props">
+            <div class="file-card-header">
+              <span class="file-icon">⚙️</span>
+              <code>gradle.properties</code>
+            </div>
+            <p>
+              Propriétés globales : version du plugin, version de la plateforme,
+              options de la JVM…
+            </p>
+          </div>
+
+          <div class="file-card" id="fc-gradlew">
+            <div class="file-card-header">
+              <span class="file-icon">🔧</span>
+              <code>gradlew / gradlew.bat</code>
+            </div>
+            <p>
+              Le wrapper Gradle. Permet de compiler le projet sans installer Gradle
+              soi-même, avec la bonne version.
+            </p>
+          </div>
+
+          <div class="file-card" id="fc-java">
+            <div class="file-card-header">
+              <span class="file-icon">☕</span>
+              <code>src/main/java</code>
+            </div>
+            <p>
+              C'est ici que vous écrivez le code du plugin (actions, services,
+              inspections, etc.), rangé dans des packages comme n'importe quel
+              projet Java.
+            </p>
+          </div>
+
+          <div class="file-card" id="fc-resources">
+            <div class="file-card-header">
+              <span class="file-icon">🎨</span>
+              <code>src/main/resources</code>
+            </div>
+            <p>
+              Contient tout ce qui n'est pas du code Java : <code>plugin.xml</code>,
+              l'icône du plugin, les fichiers de textes
+              (<code>.properties</code>) pour les libellés.
+            </p>
+          </div>
+
+          <div class="file-card highlight-card" id="fc-plugin-xml">
+            <div class="file-card-header">
+              <span class="file-icon">🗝️</span>
+              <code>META-INF/plugin.xml</code>
+            </div>
+            <p>
+              La <strong>carte d'identité</strong> du plugin. L'IDE le lit au démarrage
+              pour savoir ce que votre plugin apporte. Sans lui (ou s'il est mal rempli),
+              le plugin n'est pas chargé.
+            </p>
+          </div>
+
+          <div class="file-card" id="fc-test">
+            <div class="file-card-header">
+              <span class="file-icon">🧪</span>
+              <code>src/test</code>
+            </div>
+            <p>
+              Accueille les tests automatisés du plugin, avec la même organisation
+              en packages que <code>src/main</code>.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- plugin.xml -->
+        <h3 class="subsection-title" id="plugin-xml-section">Le fichier plugin.xml</h3>
+        <p>
+          C'est la <strong>carte d'identité</strong> du plugin. L'IDE le lit au démarrage
+          pour savoir ce que votre plugin apporte. Sans lui, le plugin n'est pas chargé.
+        </p>
+
+        <div class="code-block-wrapper" id="code-plugin-xml">
+          <div class="code-header">
+            <span class="code-lang">XML</span>
+            <span class="code-file">plugin.xml</span>
+            <button class="copy-btn" data-target="plugin-xml-code" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="plugin-xml-code"><code><span class="xml-tag">&lt;idea-plugin&gt;</span>
+    <span class="xml-tag">&lt;id&gt;</span><span class="xml-val">fr.umontpellier.iut.monplugin</span><span class="xml-tag">&lt;/id&gt;</span>
+    <span class="xml-tag">&lt;name&gt;</span><span class="xml-val">Mon Plugin</span><span class="xml-tag">&lt;/name&gt;</span>
+    <span class="xml-tag">&lt;vendor&gt;</span><span class="xml-val">Saksouk, Aubert</span><span class="xml-tag">&lt;/vendor&gt;</span>
+    <span class="xml-tag">&lt;description&gt;</span><span class="xml-val">Description affichée dans la liste des plugins.</span><span class="xml-tag">&lt;/description&gt;</span>
+
+    <span class="xml-comment">&lt;!-- Dépendance au module Java de l'IDE --&gt;</span>
+    <span class="xml-tag">&lt;depends&gt;</span><span class="xml-val">com.intellij.modules.platform</span><span class="xml-tag">&lt;/depends&gt;</span>
+    <span class="xml-tag">&lt;depends&gt;</span><span class="xml-val">com.intellij.java</span><span class="xml-tag">&lt;/depends&gt;</span>
+
+    <span class="xml-tag">&lt;actions&gt;</span>
+        <span class="xml-comment">&lt;!-- Vos actions (menus, raccourcis) sont déclarées ici --&gt;</span>
+    <span class="xml-tag">&lt;/actions&gt;</span>
+
+    <span class="xml-tag">&lt;extensions</span> <span class="xml-attr">defaultExtensionNs</span>=<span class="xml-str">"com.intellij"</span><span class="xml-tag">&gt;</span>
+        <span class="xml-comment">&lt;!-- Vos services, inspections, etc. sont déclarés ici --&gt;</span>
+    <span class="xml-tag">&lt;/extensions&gt;</span>
+<span class="xml-tag">&lt;/idea-plugin&gt;</span></code></pre>
+        </div>
+
+        <div class="xml-fields-grid" id="xml-fields">
+          <div class="xml-field">
+            <code class="xml-field-key">&lt;id&gt;</code>
+            <p>Identifiant unique (même logique que le Group vu en partie 1).</p>
+          </div>
+          <div class="xml-field">
+            <code class="xml-field-key">&lt;depends&gt;</code>
+            <p>Les modules dont dépend le plugin. La ligne sur le module Java est indispensable si vous manipulez du code Java.</p>
+          </div>
+          <div class="xml-field">
+            <code class="xml-field-key">&lt;actions&gt;</code>
+            <p>Les boutons, entrées de menu ou raccourcis que l'utilisateur peut déclencher.</p>
+          </div>
+          <div class="xml-field">
+            <code class="xml-field-key">&lt;extensions&gt;</code>
+            <p>Les points d'extension de l'IDE auxquels vous vous branchez (inspections, services, fenêtres d'outils…).</p>
+          </div>
+        </div>
+
+        <div class="callout callout-warning" id="callout-ignored">
+          <div class="callout-icon">⚠️</div>
+          <div>
+            <strong>Fichiers à ignorer (non versionnés) :</strong>
+            Les dossiers <code>build/</code>, <code>.gradle/</code> et <code>.idea/</code>
+            sont générés automatiquement. Ajoutez-les à votre <code>.gitignore</code>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 : TESTER -->
+    <section class="tuto-section" id="test">
+      <div class="section-inner">
+        <div class="section-label">Étape 4</div>
+        <h2 class="section-title">Tester le plugin</h2>
+        <p class="section-lead">
+          Un plugin ne s'exécute pas dans votre IDE de développement : il est lancé dans
+          une seconde instance d'IntelliJ, isolée, appelée <strong>sandbox</strong>.
+          Vos réglages et projets personnels ne sont donc pas touchés.
+        </p>
+
+        <div class="sandbox-diagram" id="sandbox-diagram">
+          <div class="sandbox-box dev">
+            <div class="sandbox-icon">💻</div>
+            <div class="sandbox-label">IntelliJ de développement</div>
+            <div class="sandbox-sub">Votre IDE habituel</div>
+          </div>
+          <div class="sandbox-arrow">
+            <svg width="60" height="24" viewBox="0 0 60 24"><path d="M0 12 H50 M40 4 L52 12 L40 20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+            <span>runIde</span>
+          </div>
+          <div class="sandbox-box sandbox">
+            <div class="sandbox-icon">🧪</div>
+            <div class="sandbox-label">Sandbox IntelliJ</div>
+            <div class="sandbox-sub">Environnement isolé de test</div>
+          </div>
+        </div>
+
+        <!-- Lancer -->
+        <h3 class="subsection-title">Lancer le plugin dans l'IDE de test</h3>
+        <ol class="steps-list" id="steps-run">
+          <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <h4>Ouvrir l'onglet Gradle</h4>
+              <p>Ouvrez l'onglet <strong>Gradle</strong> (à droite de l'IDE).</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <h4>Lancer runIde</h4>
+              <p>Allez dans <kbd>Tasks</kbd> → <kbd>intellij platform</kbd> → <kbd>runIde</kbd> et double-cliquez.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <h4>Tester</h4>
+              <p>Une nouvelle fenêtre IntelliJ s'ouvre avec votre plugin installé. Ouvrez un projet et testez votre fonctionnalité.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="callout callout-info" id="callout-sandbox">
+          <div class="callout-icon">⏱️</div>
+          <div>
+            Au premier lancement, la sandbox télécharge et prépare l'IDE : cela peut prendre <strong>plusieurs minutes</strong>.
+          </div>
+        </div>
+
+        <!-- Déboguer -->
+        <h3 class="subsection-title">Déboguer</h3>
+        <div class="debug-card" id="debug-card">
+          <div class="debug-icon">🐛</div>
+          <div class="debug-content">
+            <p>
+              Faites un <strong>clic droit</strong> sur <code>runIde</code> puis choisissez
+              <strong>Debug</strong>. Les points d'arrêt posés dans votre code sont pris en
+              compte quand vous utilisez le plugin dans la fenêtre de test.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tests automatisés -->
+        <h3 class="subsection-title">Écrire des tests automatisés</h3>
+        <ol class="steps-list" id="steps-tests">
+          <li class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <h4>Placer les tests</h4>
+              <p>Placez vos tests dans <code>src/test/java</code>.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <h4>Lancer les tests</h4>
+              <p>Lancez-les avec la tâche Gradle <kbd>test</kbd> (<kbd>Tasks</kbd> → <kbd>verification</kbd> → <kbd>test</kbd>) ou avec le bouton vert à côté de la classe de test.</p>
+            </div>
+          </li>
+          <li class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <h4>Tests dépendant de la plateforme</h4>
+              <p>Pour tester du code qui dépend de la plateforme (fichiers, éditeur, analyse de code), utilisez la classe <code>BasePlatformTestCase</code> en l'ajoutant dans les dépendances de <code>build.gradle.kts</code>.</p>
+            </div>
+          </li>
+        </ol>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span>⚙️</span>
+        <span>IntelliJ Plugin Tutorial</span>
+      </div>
+      <div class="footer-links">
+        <a href="annexe.html" id="footer-annexe">📄 Documentation Analyse Statique</a>
+        <a href="https://plugins.jetbrains.com/docs/intellij/getting-started.html" target="_blank" rel="noopener">Documentation JetBrains ↗</a>
+      </div>
+      <div class="footer-credits">
+        Saksouk Mahdi &amp; Aubert Florian — IUT Informatique, SAE A3-S5
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
