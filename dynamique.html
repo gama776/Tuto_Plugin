@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analyse Dynamique — Agent Java & ASM — Plugin IntelliJ SAE 3A</title>
+  <meta name="description" content="Documentation de l'analyse dynamique : Agent Java, ASM, instrumentation du bytecode Java et lancement depuis l'IDE IntelliJ IDEA. SAE A3-S5." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="annexe-page">
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <span class="nav-logo">⚙️</span>
+        <span class="nav-title">IntelliJ Plugin</span>
+        <span class="nav-badge">SAE A3-S5</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Tutoriel</a></li>
+        <li class="nav-sep"></li>
+        <li><a href="annexe.html" class="nav-doc-link">📖 Statique</a></li>
+        <li><a href="dynamique.html" class="nav-doc-link active-doc">⚡ Dynamique</a></li>
+        <li><a href="extensions.html" class="nav-doc-link">🔌 Extensions</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <header class="hero hero-small">
+    <div class="hero-bg">
+      <div class="orb orb-1" style="background:radial-gradient(circle,rgba(251,191,36,0.3) 0%,transparent 70%)"></div>
+      <div class="orb orb-2" style="background:radial-gradient(circle,rgba(239,68,68,0.22) 0%,transparent 70%)"></div>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-meta">
+        <a href="index.html" class="hero-chip chip-link">← Tutoriel</a>
+        <span class="hero-chip">Documentation</span>
+        <span class="hero-chip">Analyse Dynamique</span>
+      </div>
+      <h1 class="hero-title">Analyse <span class="gradient-text-amber">Dynamique</span></h1>
+      <p class="hero-subtitle">
+        Observer et instrumenter un programme Java <strong>pendant son exécution</strong> : Agent Java, transformation du bytecode avec ASM, mesure d'affectations et intégration dans l'IDE.
+      </p>
+    </div>
+  </header>
+
+  <div class="toc-wrapper" id="toc">
+    <div class="toc-inner">
+      <h2 class="toc-title">Table des matières</h2>
+      <ol class="toc-list">
+        <li><a href="#s1">Panorama des approches</a></li>
+        <li><a href="#s2">Statique vs Dynamique</a></li>
+        <li><a href="#s3">Agent Java — Concept & Architecture</a></li>
+        <li><a href="#s4">Agent Java & ASM — Instrumentation de bout en bout</a></li>
+        <li><a href="#s5">ASM en détail — Manipulation du Bytecode</a></li>
+        <li><a href="#s6">Lancer depuis l'IDE (JavaProgramPatcher)</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <main class="main-content annexe-main">
+
+    <!-- S1 : Panorama -->
+    <section class="tuto-section" id="s1">
+      <div class="section-inner">
+        <div class="section-label">Section 1</div>
+        <h2 class="section-title">Panorama des approches d'analyse dynamique</h2>
+        <p class="section-lead">L'analyse dynamique consiste à recueillir des métriques et des événements lors de l'exécution effective du programme.</p>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Approche</th><th>Principe</th><th>Points forts</th><th>Limites</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Agent Java + ASM (Notre choix SAE)</strong></td>
+                <td>Instrumentation sur mesure du bytecode lors du chargement des classes par la JVM.</td>
+                <td>Contrôle total : enregistre ce qu'on veut (affectations, valeurs, compteurs d'exécution, traces de méthodes).</td>
+                <td>Demande la maîtrise d'ASM et du bytecode ; gestion fine de la pile JVM.</td>
+              </tr>
+              <tr>
+                <td><strong>Byte Buddy / Javassist</strong></td>
+                <td>Bibliothèques de plus haut niveau pour abstraire les instructions bytecode.</td>
+                <td>Syntaxe plus simple pour intercepter l'entrée ou la sortie de méthodes.</td>
+                <td>Moins adaptées aux manipulations d'instructions élémentaires (affectations locales, opcodes d'injection précis).</td>
+              </tr>
+              <tr>
+                <td><strong>JDI (Java Debug Interface)</strong></td>
+                <td>Pilotage d'une JVM distante par socket de debug.</td>
+                <td>Ne modifie pas le bytecode de l'application cible.</td>
+                <td>Surcharge importante (ralentissement majeur) pour du traçage continu.</td>
+              </tr>
+              <tr>
+                <td><strong>API Debugger IntelliJ (XDebugger)</strong></td>
+                <td>Accrochage aux sessions de débogage de l'IDE.</td>
+                <td>Accès aux variables locales et à la pile aux points d'arrêt dans l'interface de l'IDE.</td>
+                <td>Non conçu pour collecter automatiquement des métriques d'exécution complètes.</td>
+              </tr>
+              <tr>
+                <td><strong>Java Flight Recorder (JFR)</strong></td>
+                <td>Module de profilage bas niveau intégré au runtime de la JVM.</td>
+                <td>Impact quasi nul sur les performances.</td>
+                <td>Orienté métriques système/mémoire/CPU, pas analyse fine des variables ou instructions.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- S2 : Statique vs Dynamique -->
+    <section class="tuto-section alt-bg" id="s2">
+      <div class="section-inner">
+        <div class="section-label">Section 2</div>
+        <h2 class="section-title">Statique vs Dynamique — L'idée centrale</h2>
+        <p class="section-lead">Il est fondamental de bien distinguer le <strong>code source Java</strong>, le <strong>bytecode <code>.class</code></strong> et l'<strong>exécution runtime</strong> au sein de la JVM.</p>
+
+        <div class="code-block-wrapper">
+          <div class="code-header"><span class="code-lang">Java</span><span class="code-file">Exemple d'affectations et boucles</span></div>
+          <pre class="code-block"><code><span class="java-kw">int</span> total = 0;           <span class="java-comment">// 1 site d'affectation statique</span>
+<span class="java-kw">for</span> (<span class="java-kw">int</span> i = 0; i &lt; 5; i++) { <span class="java-comment">// 2 sites statiques (i = 0, i++)</span>
+    total += i;           <span class="java-comment">// 1 site statique (total += i)</span>
+}</code></pre>
+        </div>
+
+        <div class="compare-grid">
+          <div class="compare-card compare-static">
+            <div class="compare-icon">📖</div>
+            <h3>Analyse Statique (PSI)</h3>
+            <p>Analyse le code sans l'exécuter via l'AST/PSI d'IntelliJ :</p>
+
+            <code class="inline-code">Source Java → Arbre PSI → Inspection visuelle IDE</code>
+            <p style="margin-top:10px">Compte le nombre de variables et d'instructions déclarées dans les fichiers (ex. <strong>4 sites d'affectation statiques</strong> dans le code).</p>
+          </div>
+          <div class="compare-card" style="background:linear-gradient(135deg,rgba(251,191,36,0.08),var(--bg-700));border-color:var(--amber-500)">
+            <div class="compare-icon">▶️</div>
+            <h3>Analyse Dynamique (Agent + ASM)</h3>
+            <p>Observe le comportement réel en mémoire pendant la chaîne de compilation et d'exécution :</p>
+            <code class="inline-code">.class → Agent Java + ASM → JVM Runtime → Traces &amp; Métriques</code>
+            <p style="margin-top:10px">Mesure le nombre effectif de passages sur ces instructions (ex. <code>total += i</code> s'exécute <strong>5 fois</strong> en dynamique).</p>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Deux grandes manières d'observer en dynamique</h3>
+        <div class="ep-grid">
+          <div class="ep-card" style="border-color:var(--amber-500)">
+            <div class="ep-tag" style="background:rgba(251,191,36,0.15);color:var(--amber-400);border-color:rgba(251,191,36,0.3)">Instrumentation Bytecode (Agent Java)</div>
+            <p>On <strong>modifie les octets du bytecode</strong> au moment du chargement par la JVM pour insérer des appels d'enregistrement :</p>
+            <code class="inline-code">Counters.hit(idAffectation);</code>
+            <p style="margin-top:10px">Exécution rapide, automatique et totalement transparente pour l'application cible.</p>
+          </div>
+          <div class="ep-card">
+            <div class="ep-tag">Supervision Debugger (JDI)</div>
+            <p>Le bytecode reste <strong>intact</strong>, mais la JVM envoie des événements via le protocole JDWP à chaque point d'arrêt ou pas à pas.</p>
+            <p>Pratique pour l'inspection interactive, mais trop lent pour un suivi exhaustif et continu d'affectations.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S3 : Agent Java Bases -->
+    <section class="tuto-section" id="s3">
+      <div class="section-inner">
+        <div class="section-label">Section 3</div>
+        <h2 class="section-title">Agent Java — Concept & Architecture</h2>
+
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="info-card-icon">🚀</div>
+            <h3>Chargement JVM</h3>
+            <p>Un Agent Java est un fichier JAR spécifié à la JVM via l'argument CLI <code>-javaagent:agent.jar=options</code> avant l'appel à <code>main()</code>.</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🔧</div>
+            <h3>Point d'entrée Premain</h3>
+            <p>La méthode <code>premain(String args, Instrumentation inst)</code> est exécutée en premier. L'objet <code>Instrumentation</code> permet d'enregistrer un <code>ClassFileTransformer</code>.</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">📄</div>
+            <h3>Manifeste JAR</h3>
+            <p>Le fichier <code>MANIFEST.MF</code> doit déclarer : <code>Premain-Class: fr.monequipe.agent.TraceAgent</code> et <code>Can-Retransform-Classes: true</code>.</p>
+          </div>
+        </div>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">Kotlin</span>
+            <span class="code-file">agent/build.gradle.kts — Configuration du JAR Fat avec ASM</span>
+            <button class="copy-btn" data-target="code-agent-gradle" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="code-agent-gradle"><code>tasks.jar {
+    manifest {
+        attributes(
+            <span class="java-str">"Premain-Class"</span> to <span class="java-str">"fr.monequipe.agent.TraceAgent"</span>,
+            <span class="java-str">"Can-Retransform-Classes"</span> to <span class="java-str">"true"</span>
+        )
+    }
+    <span class="java-comment">// Emballer les dépendances (ASM) dans le JAR de l'agent (Fat JAR)</span>
+    from(configurations.runtimeClasspath.get().map { <span class="java-kw">if</span> (it.isDirectory) it <span class="java-kw">else</span> zipTree(it) })
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}</code></pre>
+        </div>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">Java</span>
+            <span class="code-file">TraceAgent.java &amp; TraceTransformer.java</span>
+            <button class="copy-btn" data-target="code-agent-java" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="code-agent-java"><code><span class="java-kw">package</span> fr.monequipe.agent;
+
+<span class="java-kw">import</span> java.lang.instrument.ClassFileTransformer;
+<span class="java-kw">import</span> java.lang.instrument.Instrumentation;
+<span class="java-kw">import</span> java.security.ProtectionDomain;
+<span class="java-kw">import</span> org.objectweb.asm.ClassReader;
+<span class="java-kw">import</span> org.objectweb.asm.ClassWriter;
+
+<span class="java-kw">public final class</span> <span class="java-class">TraceAgent</span> {
+    <span class="java-kw">public static void</span> <span class="java-fn">premain</span>(String agentArgs, Instrumentation inst) {
+        System.out.<span class="java-fn">println</span>(<span class="java-str">"[AGENT] Initialisation de l'agent d'instrumentation..."</span>);
+        inst.<span class="java-fn">addTransformer</span>(<span class="java-kw">new</span> <span class="java-class">TraceTransformer</span>(agentArgs), <span class="java-kw">false</span>);
+    }
+}
+
+<span class="java-kw">final class</span> <span class="java-class">TraceTransformer</span> <span class="java-kw">implements</span> <span class="java-class">ClassFileTransformer</span> {
+    <span class="java-kw">private final</span> String targetPrefix;
+
+    <span class="java-class">TraceTransformer</span>(String targetPrefix) {
+        <span class="java-kw">this</span>.targetPrefix = targetPrefix == <span class="java-kw">null</span> ? <span class="java-str">""</span> : targetPrefix.<span class="java-fn">replace</span>(<span class="java-str">'.'</span>, <span class="java-str">'/'</span>);
+    }
+
+    <span class="java-ann">@Override</span>
+    <span class="java-kw">public byte</span>[] <span class="java-fn">transform</span>(ClassLoader loader, String className, Class&lt;?&gt; classBeingRedefined,
+                             ProtectionDomain protectionDomain, <span class="java-kw">byte</span>[] classfileBuffer) {
+        <span class="java-comment">// Ignorer les classes système ou hors du package cible</span>
+        <span class="java-kw">if</span> (className == <span class="java-kw">null</span> || !className.<span class="java-fn">startsWith</span>(targetPrefix)) {
+            <span class="java-kw">return null</span>; <span class="java-comment">// null signifie "pas de modification"</span>
+        }
+        <span class="java-kw">try</span> {
+            ClassReader cr = <span class="java-kw">new</span> <span class="java-class">ClassReader</span>(classfileBuffer);
+            ClassWriter cw = <span class="java-kw">new</span> <span class="java-class">ClassWriter</span>(cr, ClassWriter.COMPUTE_MAXS);
+            cr.<span class="java-fn">accept</span>(<span class="java-kw">new</span> <span class="java-class">InstrumentingClassVisitor</span>(cw), 0);
+            <span class="java-kw">return</span> cw.<span class="java-fn">toByteArray</span>();
+        } <span class="java-kw">catch</span> (Throwable t) {
+            System.err.<span class="java-fn">println</span>(<span class="java-str">"[AGENT ERROR] Erreur lors de la transformation de "</span> + className);
+            t.<span class="java-fn">printStackTrace</span>();
+            <span class="java-kw">return null</span>;
+        }
+    }
+}</code></pre>
+        </div>
+
+        <h3 class="subsection-title">3 Règles d'hygiène fondamentales pour les Agents Java</h3>
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <h4>Filtrer rigoureusement les packages</h4>
+              <p>Ne jamais instrumenter le JDK (<code>java/</code>, <code>javax/</code>, <code>sun/</code>, <code>jdk/</code>) ni le package interne de l'agent. Une tentative d'instrumentation des classes système provoque un <code>ClassCircularityError</code> ou un crash JVM.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <h4>Capturer tous les Throwable dans transform()</h4>
+              <p>Si une exception est levée pendant le travail d'ASM dans <code>transform()</code>, la JVM l'avale silencieusement et la classe originale est chargée non modifiée sans aucun avertissement. Le <code>try/catch (Throwable t)</code> est impératif.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <h4>Garantir le Thread-Safety et minimiser l'impact</h4>
+              <p>Les méthodes injectées (ex. <code>Counters.hit(id)</code>) sont appelées en boucle dans des environnements multithread. Utiliser <code>LongAdder</code> ou des tableaux atomiques pour éviter les goulots d'étranglement.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S4 : Agent & ASM Bout en Bout -->
+    <section class="tuto-section alt-bg" id="s4">
+      <div class="section-inner">
+        <div class="section-label">Section 4</div>
+        <h2 class="section-title">Agent Java &amp; ASM — Instrumentation de bout en bout</h2>
+        <p class="section-lead">
+          Cas d'étude SAE : Détecter les <strong>sites d'affectation de variables</strong> (mesure statique dans le bytecode) et mesurer le <strong>nombre d'exécutions effectives</strong> (mesure dynamique par injection d'un compteur).
+        </p>
+
+        <h3 class="subsection-title">Chaîne de traitement complète</h3>
+        <div class="chain-diagram chain-wrap">
+          <div class="chain-step">📝<br/><strong>Code source Java</strong></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-step">⚙️<br/><strong>Bytecode .class</strong></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-step" style="border-color:var(--amber-500)">🔎<br/><strong>Passe 1 : Détection ASM</strong><br/><small>Opcodes STORE / PUT</small></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-step" style="border-color:var(--primary-500)">💉<br/><strong>Passe 2 : Injection</strong><br/><small>Counters.hit(id)</small></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-step">▶️<br/><strong>Exécution JVM</strong></div>
+          <div class="chain-arrow">→</div>
+          <div class="chain-step" style="border-color:var(--accent-500)">📊<br/><strong>Fichier TSV / Plugin</strong></div>
+        </div>
+
+        <div class="numbered-steps">
+          <div class="num-step">
+            <div class="num-badge">1</div>
+            <div class="num-content">
+              <h4>Instructions Bytecode cibles pour l'analyse des affectations</h4>
+              <p>Pour suivre l'écriture dans des variables en Java, ASM recherche les opcodes d'écriture suivants :</p>
+              <div class="bytecode-grid">
+                <span class="bc-instr">ISTORE, LSTORE, FSTORE, DSTORE, ASTORE</span><span class="bc-desc">Écriture dans une variable locale (int, long, float, double, objet/ref)</span>
+                <span class="bc-instr">IINC</span><span class="bc-desc">Incrémentation directe d'une variable locale (ex: <code>i++</code>)</span>
+                <span class="bc-instr">PUTFIELD</span><span class="bc-desc">Écriture dans un attribut d'instance (<code>this.champ = val</code>)</span>
+                <span class="bc-instr">PUTSTATIC</span><span class="bc-desc">Écriture dans un attribut statique de classe (<code>Classe.champ = val</code>)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="num-step">
+            <div class="num-badge">2</div>
+            <div class="num-content">
+              <h4>Architecture en Deux Passes</h4>
+              <div class="compare-grid" style="margin-top:12px">
+                <div class="compare-card compare-static" style="padding:18px">
+                  <h3 style="font-size:0.95rem">Passe 1 : Analyse &amp; Recensement</h3>
+                  <p>Parcourir la méthode pour repérer chaque instruction d'affectation et attribuer un identifiant unique <code>ID</code>. On extrait le nom de la variable sans modifier le flux d'instructions.</p>
+                </div>
+                <div class="compare-card" style="padding:18px;border-color:var(--amber-500);background:linear-gradient(135deg,rgba(251,191,36,0.08),var(--bg-700))">
+                  <h3 style="font-size:0.95rem">Passe 2 : Injection de la Sonde</h3>
+                  <p>Pour chaque affectation identifiée, injecter immédiatement <strong>après</strong> l'instruction l'appel statique de comptage :<br/>
+                  <code>LDC id</code> <em>(Empiler l'ID)</em><br/>
+                  <code>INVOKESTATIC fr/monequipe/agent/Counters.hit(I)V</code></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="num-step">
+            <div class="num-badge">3</div>
+            <div class="num-content">
+              <h4>Résolution du nom des variables locales via la <code>LocalVariableTable</code></h4>
+              <p>Dans le bytecode, les variables locales sont désignées par un index numérique (<strong>slot</strong>, ex: <code>ISTORE 2</code>). Pour associer le slot 2 au nom source <code>compteur</code>, ASM consulte la table des variables locales :</p>
+              <div class="chain-diagram" style="padding:16px">
+                <div class="chain-step" style="padding:8px 14px;min-width:auto">Slot (index 2) + Offset instruction</div>
+                <div class="chain-arrow">→</div>
+                <div class="chain-step" style="padding:8px 14px;min-width:auto;border-color:var(--amber-500)">LocalVariableTable</div>
+                <div class="chain-arrow">→</div>
+                <div class="chain-step" style="padding:8px 14px;min-width:auto">Nom source : <code>compteur</code></div>
+              </div>
+              <p style="margin-top:8px">⚠️ <strong>Prérequis :</strong> Le code cible doit être compilé avec les symboles de débogage (option <code>javac -g</code>).</p>
+            </div>
+          </div>
+
+          <div class="num-step">
+            <div class="num-badge">4</div>
+            <div class="num-content">
+              <h4>Liaison Statique-Dynamique via <code>Counters.register()</code></h4>
+              <div class="chain-diagram" style="padding:16px">
+                <div class="chain-step" style="padding:8px 14px;min-width:auto">Variable <code>x</code> (Site #42)</div>
+                <div class="chain-arrow">→</div>
+                <div class="chain-step" style="padding:8px 14px;min-width:auto;border-color:var(--primary-500)">Counters.register(42, "Demo", "run", "x")</div>
+                <div class="chain-arrow">→</div>
+                <div class="chain-step" style="padding:8px 14px;min-width:auto">Counters.hit(42) à l'exécution</div>
+                <div class="chain-arrow">→</div>
+                <div class="chain-step" style="padding:8px 14px;min-width:auto;border-color:var(--accent-500)">Compteur #42 ++</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="num-step">
+            <div class="num-badge">5</div>
+            <div class="num-content">
+              <h4>Mesure Statique vs Mesure Dynamique</h4>
+              <div class="compare-grid">
+                <div class="compare-card compare-static" style="padding:16px">
+                  <h3 style="font-size:0.95rem">📊 Mesure Statique (Sites)</h3>
+                  <p>Compte le nombre d'instructions d'affectation présentes physiquement dans le bytecode.<br/><code>val = 10; val = 20; val++;</code> → <strong>3 sites d'affectation</strong></p>
+                </div>
+                <div class="compare-card" style="padding:16px;border-color:var(--amber-500);background:linear-gradient(135deg,rgba(251,191,36,0.08),var(--bg-700))">
+                  <h3 style="font-size:0.95rem">⚡ Mesure Dynamique (Exécutions)</h3>
+                  <p>Compte le nombre de fois où ces instructions ont réellement été exécutées durant la session.<br/>Si le bloc est appelé 100 fois → <strong>300 exécutions d'affectations</strong></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="num-step">
+            <div class="num-badge">6</div>
+            <div class="num-content">
+              <h4>Export des résultats au format TSV</h4>
+              <div class="code-block-wrapper">
+                <div class="code-header"><span class="code-lang">TSV</span><span class="code-file">rapport_trace.tsv</span></div>
+                <pre class="code-block" style="font-size:0.8rem"><code>type    classe          methode  variable    sites  executions
+local   com/demo/Order  process  statut      2      150
+local   com/demo/Order  process  total       1      150
+champ   com/demo/Order  —        lastUpdate  1      15</code></pre>
+              </div>
+              <p>Ce fichier TSV est généré lors de la fermeture de la JVM (via un <code>ShutdownHook</code>) puis lu par le Plugin IntelliJ pour afficher les données dans une ToolWindow.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Synthèse pour la soutenance orale (6 points clés)</h3>
+        <ol class="steps-list">
+          <li class="step-item"><div class="step-number">1</div><div class="step-body"><h4>Chargement Premain</h4><p>La JVM charge l'agent via <code>-javaagent</code> avant d'exécuter la méthode <code>main()</code>.</p></div></li>
+          <li class="step-item"><div class="step-number">2</div><div class="step-body"><h4>Transformation</h4><p>L'agent intercepte les classes cibles via un <code>ClassFileTransformer</code>.</p></div></li>
+          <li class="step-item"><div class="step-number">3</div><div class="step-body"><h4>Analyse ASM</h4><p>ASM parcourt le bytecode et identifie les opcodes d'affectation (<code>STORE</code>, <code>PUTFIELD</code>, etc.).</p></div></li>
+          <li class="step-item"><div class="step-number">4</div><div class="step-body"><h4>Injection d'instructions</h4><p>L'agent injecte un appel statique <code>Counters.hit(id)</code> après chaque site d'affectation.</p></div></li>
+          <li class="step-item"><div class="step-number">5</div><div class="step-body"><h4>Collecte Runtime</h4><p>Pendant l'exécution, les compteurs en mémoire s'incrémentent à chaque passage.</p></div></li>
+          <li class="step-item"><div class="step-number">6</div><div class="step-body"><h4>Restitution IDE</h4><p>Le fichier de résultats TSV est analysé et présenté dans le plugin IntelliJ.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- S5 : ASM en détail -->
+    <section class="tuto-section" id="s5">
+      <div class="section-inner">
+        <div class="section-label">Section 5</div>
+        <h2 class="section-title">ASM en détail — Manipulation du Bytecode</h2>
+        <p class="section-lead">
+          ASM est le framework standard de manipulation directe du bytecode Java. Il s'appuie sur le <strong>Visitor Pattern</strong> avec une chaîne de traitement réentrante :
+          <code>ClassReader</code> → <code>ClassVisitor</code> → <code>ClassWriter</code>.
+        </p>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Composant ASM</th><th>Rôle et Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>ClassReader</code></td><td>Lit le tableau d'octets du fichier <code>.class</code> et émet les événements de visite vers le <code>ClassVisitor</code>.</td></tr>
+              <tr><td><code>ClassVisitor</code></td><td>Intercepte les déclarations de la classe : <code>visit()</code>, <code>visitField()</code>, <code>visitMethod()</code>, <code>visitEnd()</code>.</td></tr>
+              <tr><td><code>MethodVisitor</code></td><td>Intercepte les instructions à l'intérieur d'une méthode : <code>visitVarInsn()</code>, <code>visitFieldInsn()</code>, <code>visitMethodInsn()</code>, <code>visitLdcInsn()</code>.</td></tr>
+              <tr><td><code>ClassWriter</code></td><td>Reconstruit et génère le nouveau tableau d'octets (<code>byte[]</code>) à partir des visites.</td></tr>
+              <tr><td><code>AdviceAdapter</code></td><td>Sous-classe évoluée de <code>MethodVisitor</code> offrant les déclencheurs <code>onMethodEnter()</code> et <code>onMethodExit()</code>.</td></tr>
+              <tr><td><code>Opcodes</code></td><td>Interface contenant toutes les constantes du bytecode (ex: <code>ASM9</code>, <code>INVOKESTATIC</code>, <code>ISTORE</code>, <code>ACC_PUBLIC</code>).</td></tr>
+              <tr><td><code>Type</code></td><td>Helper pour manipuler les descripteurs de types JVM (ex: <code>Type.INT_TYPE</code>, <code>Type.getDescriptor(String.class)</code>).</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">Java</span>
+            <span class="code-file">InstrumentingClassVisitor.java — Injection ASM complète avec AdviceAdapter</span>
+            <button class="copy-btn" data-target="code-asm" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="code-asm"><code><span class="java-kw">package</span> fr.monequipe.agent;
+
+<span class="java-kw">import</span> org.objectweb.asm.*;
+<span class="java-kw">import</span> org.objectweb.asm.commons.AdviceAdapter;
+
+<span class="java-kw">final class</span> <span class="java-class">InstrumentingClassVisitor</span> <span class="java-kw">extends</span> <span class="java-class">ClassVisitor</span> {
+    <span class="java-kw">private</span> String className;
+
+    <span class="java-class">InstrumentingClassVisitor</span>(ClassVisitor next) {
+        <span class="java-kw">super</span>(Opcodes.ASM9, next);
+    }
+
+    <span class="java-ann">@Override</span>
+    <span class="java-kw">public void</span> <span class="java-fn">visit</span>(<span class="java-kw">int</span> version, <span class="java-kw">int</span> access, String name, String signature,
+                       String superName, String[] interfaces) {
+        <span class="java-kw">this</span>.className = name;
+        <span class="java-kw">super</span>.<span class="java-fn">visit</span>(version, access, name, signature, superName, interfaces);
+    }
+
+    <span class="java-ann">@Override</span>
+    <span class="java-kw">public</span> MethodVisitor <span class="java-fn">visitMethod</span>(<span class="java-kw">int</span> access, String name, String descriptor,
+                                       String signature, String[] exceptions) {
+        MethodVisitor mv = <span class="java-kw">super</span>.<span class="java-fn">visitMethod</span>(access, name, descriptor, signature, exceptions);
+        <span class="java-kw">if</span> (mv == <span class="java-kw">null</span> || (access &amp; (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) != 0) {
+            <span class="java-kw">return</span> mv;
+        }
+
+        <span class="java-kw">return new</span> <span class="java-class">AdviceAdapter</span>(Opcodes.ASM9, mv, access, name, descriptor) {
+
+            <span class="java-ann">@Override</span>
+            <span class="java-kw">public void</span> <span class="java-fn">visitVarInsn</span>(<span class="java-kw">int</span> opcode, <span class="java-kw">int</span> varIndex) {
+                <span class="java-comment">// 1. Exécuter l'instruction d'affectation originale (ex: ISTORE)</span>
+                <span class="java-kw">super</span>.<span class="java-fn">visitVarInsn</span>(opcode, varIndex);
+
+                <span class="java-comment">// 2. Détecter si c'est un Opcode d'écriture (ISTORE, LSTORE, FSTORE, DSTORE, ASTORE)</span>
+                <span class="java-kw">if</span> (opcode &gt;= Opcodes.ISTORE &amp;&amp; opcode &lt;= Opcodes.ASTORE) {
+                    <span class="java-kw">int</span> siteId = Counters.<span class="java-fn">register</span>(<span class="java-str">"LOCAL"</span>, className, name, <span class="java-str">"slot_"</span> + varIndex);
+                    <span class="java-comment">// Injecter : LDC siteId puis INVOKESTATIC Counters.hit(I)V</span>
+                    <span class="java-fn">visitLdcInsn</span>(siteId);
+                    <span class="java-fn">visitMethodInsn</span>(Opcodes.INVOKESTATIC, <span class="java-str">"fr/monequipe/agent/Counters"</span>,
+                                    <span class="java-str">"hit"</span>, <span class="java-str">"(I)V"</span>, <span class="java-kw">false</span>);
+                }
+            }
+
+            <span class="java-ann">@Override</span>
+            <span class="java-kw">public void</span> <span class="java-fn">visitFieldInsn</span>(<span class="java-kw">int</span> opcode, String owner, String fieldName, String fieldDesc) {
+                <span class="java-kw">super</span>.<span class="java-fn">visitFieldInsn</span>(opcode, owner, fieldName, fieldDesc);
+                <span class="java-kw">if</span> (opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC) {
+                    <span class="java-kw">int</span> siteId = Counters.<span class="java-fn">register</span>(<span class="java-str">"FIELD"</span>, owner, fieldName, fieldName);
+                    <span class="java-fn">visitLdcInsn</span>(siteId);
+                    <span class="java-fn">visitMethodInsn</span>(Opcodes.INVOKESTATIC, <span class="java-str">"fr/monequipe/agent/Counters"</span>,
+                                    <span class="java-str">"hit"</span>, <span class="java-str">"(I)V"</span>, <span class="java-kw">false</span>);
+                }
+            }
+        };
+    }
+}</code></pre>
+        </div>
+
+        <h3 class="subsection-title">Pièges courants et bonnes pratiques ASM</h3>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Piège ASM</th><th>Cause &amp; Solution</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>ClassFileFormatError</code> / <code>VerifyError</code></td>
+                <td>Déséquilibre dans la pile d'exécution. Si une valeur est poussée sur la pile (ex: <code>visitLdcInsn</code>), elle doit être consommée immédiatement par l'instruction suivante (ex: <code>hit(I)V</code>).</td>
+              </tr>
+              <tr>
+                <td><code>COMPUTE_FRAMES</code> vs <code>COMPUTE_MAXS</code></td>
+                <td><code>COMPUTE_FRAMES</code> recalcule automatiquement les StackMapTable (Java 7+), mais peut lever une <code>ClassNotFoundException</code> dans le contexte du ClassLoader d'un agent. Privilégier <code>COMPUTE_MAXS</code> lorsque vous n'ajoutez pas de branchements conditionnels.</td>
+              </tr>
+              <tr>
+                <td>Version d'ASM incompatible</td><td>Si la cible utilise Java 17 ou Java 21, il faut utiliser <code>Opcodes.ASM9</code> et ASM 9.5+. Sinon une <code>IllegalArgumentException: Unsupported class file major version</code> survient.</td></tr>
+              <tr>
+                <td>Purger le constructeur <code>&lt;init&gt;</code></td><td>Ne jamais insérer de code d'observation avant l'appel obligatoire à <code>super()</code> dans un constructeur. <code>AdviceAdapter</code> gère ce cas automatiquement via <code>onMethodEnter()</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- S6 : Lancer depuis l'IDE -->
+    <section class="tuto-section alt-bg" id="s6">
+      <div class="section-inner">
+        <div class="section-label">Section 6</div>
+        <h2 class="section-title">Lancer le programme avec l'agent depuis l'IDE</h2>
+        <p class="section-lead">Comment le plugin IntelliJ fait-il exécuter l'application cible avec le paramètre <code>-javaagent</code> ? Deux approches sont possibles.</p>
+
+        <div class="display-options">
+          <div class="display-option" id="do-option-a">
+            <div class="do-header">
+              <span class="do-number">Option A</span>
+              <span class="do-name">Processus indépendant via <code>GeneralCommandLine</code></span>
+              <span class="do-badge do-simple">Lancement Manuel</span>
+            </div>
+            <p>Le plugin instancie lui-même la commande système pour démarrer une nouvelle JVM. Nécessite de calculer manuellement le chemin du JDK et du Classpath.</p>
+            <div class="code-block-wrapper">
+              <div class="code-header">
+                <span class="code-lang">Java</span>
+                <button class="copy-btn" data-target="code-option-a" aria-label="Copier">📋 Copier</button>
+              </div>
+              <pre class="code-block" id="code-option-a"><code>GeneralCommandLine cmd = <span class="java-kw">new</span> <span class="java-class">GeneralCommandLine</span>(javaExePath)
+        .<span class="java-fn">withParameters</span>(<span class="java-str">"-javaagent:"</span> + agentJarPath + <span class="java-str">"=com.example.app"</span>,
+                         <span class="java-str">"-cp"</span>, targetClasspath, mainClass)
+        .<span class="java-fn">withWorkDirectory</span>(project.<span class="java-fn">getBasePath</span>());
+
+OSProcessHandler handler = <span class="java-kw">new</span> <span class="java-class">OSProcessHandler</span>(cmd);
+handler.<span class="java-fn">addProcessListener</span>(<span class="java-kw">new</span> <span class="java-class">ProcessAdapter</span>() {
+    <span class="java-ann">@Override</span>
+    <span class="java-kw">public void</span> <span class="java-fn">processTerminated</span>(<span class="java-ann">@NotNull</span> ProcessEvent event) {
+        <span class="java-comment">// Lire le fichier TSV produit par l'agent à la fin du processus</span>
+        DynamicReportService.<span class="java-fn">getInstance</span>(project).<span class="java-fn">loadReport</span>();
+    }
+});
+handler.<span class="java-fn">startNotify</span>();</code></pre>
+            </div>
+          </div>
+
+          <div class="display-option" id="do-option-b">
+            <div class="do-header">
+              <span class="do-number">Option B</span>
+              <span class="do-name">Integration transparente via <code>JavaProgramPatcher</code></span>
+              <span class="do-badge do-recommended">⭐ Recommandé</span>
+            </div>
+            <p>Le plugin se greffe sur les exécutions standards de l'IDE (bouton Run/Debug de l'utilisateur) et injecte le paramètre <code>-javaagent</code> directement dans la JVM lancée par IntelliJ.</p>
+            <div class="code-block-wrapper">
+              <div class="code-header">
+                <span class="code-lang">Java</span>
+                <span class="code-file">AgentProgramPatcher.java</span>
+                <button class="copy-btn" data-target="code-option-b-java" aria-label="Copier">📋 Copier</button>
+              </div>
+              <pre class="code-block" id="code-option-b-java"><code><span class="java-kw">package</span> fr.monequipe.sae.dynamic;
+
+<span class="java-kw">import</span> com.intellij.execution.Executor;
+<span class="java-kw">import</span> com.intellij.execution.configurations.JavaParameters;
+<span class="java-kw">import</span> com.intellij.execution.configurations.RunProfile;
+<span class="java-kw">import</span> com.intellij.execution.runners.JavaProgramPatcher;
+
+<span class="java-kw">public class</span> <span class="java-class">AgentProgramPatcher</span> <span class="java-kw">extends</span> <span class="java-class">JavaProgramPatcher</span> {
+    <span class="java-ann">@Override</span>
+    <span class="java-kw">public void</span> <span class="java-fn">patchJavaParameters</span>(Executor executor, RunProfile configuration, JavaParameters params) {
+        String agentPath = AgentLocator.<span class="java-fn">getAgentJarPath</span>();
+        params.<span class="java-fn">getVMParametersList</span>().<span class="java-fn">add</span>(<span class="java-str">"-javaagent:"</span> + agentPath + <span class="java-str">"=com.example.app"</span>);
+    }
+}</code></pre>
+            </div>
+            <div class="code-block-wrapper">
+              <div class="code-header">
+                <span class="code-lang">XML</span>
+                <span class="code-file">plugin.xml — Déclaration de l'Extension Point</span>
+                <button class="copy-btn" data-target="code-option-b-xml" aria-label="Copier">📋 Copier</button>
+              </div>
+              <pre class="code-block" id="code-option-b-xml"><code><span class="xml-tag">&lt;extensions</span> <span class="xml-attr">defaultExtensionNs</span>=<span class="xml-str">"com.intellij"</span><span class="xml-tag">&gt;</span>
+    <span class="xml-tag">&lt;java.programPatcher</span>
+        <span class="xml-attr">implementation</span>=<span class="xml-str">"fr.monequipe.sae.dynamic.AgentProgramPatcher"</span><span class="xml-tag">/&gt;</span>
+<span class="xml-tag">&lt;/extensions&gt;</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand"><span>⚡</span><span>Analyse Dynamique</span></div>
+      <div class="footer-links">
+        <a href="index.html">← Tutoriel</a>
+        <a href="annexe.html">📖 Analyse Statique</a>
+        <a href="extensions.html">🔌 Extensions →</a>
+        <a href="https://asm.ow2.io/" target="_blank" rel="noopener">Doc ASM ↗</a>
+      </div>
+      <div class="footer-credits">Saksouk Mahdi &amp; Aubert Florian — IUT Informatique, SAE A3-S5</div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extensions & plugin.xml — Catalogue — Plugin IntelliJ SAE 3A</title>
+  <meta name="description" content="Catalogue complet des points d'extension IntelliJ : actions, toolWindow, inspections, services, démarrage, exécution. SAE A3-S5." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="annexe-page">
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <span class="nav-logo">⚙️</span>
+        <span class="nav-title">IntelliJ Plugin</span>
+        <span class="nav-badge">SAE A3-S5</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Tutoriel</a></li>
+        <li class="nav-sep"></li>
+        <li><a href="annexe.html" class="nav-doc-link">📖 Statique</a></li>
+        <li><a href="dynamique.html" class="nav-doc-link">⚡ Dynamique</a></li>
+        <li><a href="extensions.html" class="nav-doc-link active-doc">🔌 Extensions</a></li>
+      </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <header class="hero hero-small">
+    <div class="hero-bg">
+      <div class="orb orb-1" style="background:radial-gradient(circle,rgba(168,85,247,0.3) 0%,transparent 70%)"></div>
+      <div class="orb orb-2" style="background:radial-gradient(circle,rgba(99,102,241,0.25) 0%,transparent 70%)"></div>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-meta">
+        <a href="index.html" class="hero-chip chip-link">← Tutoriel</a>
+        <span class="hero-chip">Documentation</span>
+        <span class="hero-chip">Section 04</span>
+      </div>
+      <h1 class="hero-title"><span class="gradient-text-purple">Extensions</span> &amp; plugin.xml</h1>
+      <p class="hero-subtitle">
+        Catalogue des points d'extension IntelliJ : actions, toolWindow, inspections, services,
+        services, démarrage, exécution — avec exemples XML prêts à adapter.
+      </p>
+    </div>
+  </header>
+
+  <div class="toc-wrapper" id="toc">
+    <div class="toc-inner">
+      <h2 class="toc-title">Table des matières</h2>
+      <ol class="toc-list">
+        <li><a href="#s1">Comment trouver le bon point d'extension</a></li>
+        <li><a href="#s2">Catalogue — Interface et édition</a></li>
+        <li><a href="#s3">Catalogue — Services, démarrage, événements</a></li>
+        <li><a href="#s4">Catalogue — Exécution et débogage</a></li>
+        <li><a href="#s5">Exemples XML prêts à adapter</a></li>
+        <li><a href="#s6">Groupes de menus pour add-to-group</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <main class="main-content annexe-main">
+
+    <!-- S1 : Trouver -->
+    <section class="tuto-section" id="s1">
+      <div class="section-inner">
+        <div class="section-label">Section 1</div>
+        <h2 class="section-title">Comment trouver le bon point d'extension</h2>
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-body">
+              <h4>Documentation officielle</h4>
+              <p>Chercher dans la doc officielle <strong>"Extension Point List"</strong> sur plugins.jetbrains.com.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-body">
+              <h4>IntelliJ Platform Explorer</h4>
+              <p>Utiliser <a href="https://jb.gg/ipe" target="_blank" rel="noopener" style="color:var(--primary-400)">jb.gg/ipe</a> — on voit quels plugins utilisent quel EP, avec leur code.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-body">
+              <h4>Ctrl+clic dans l'IDE</h4>
+              <p>Dans l'IDE de dev : <kbd>Ctrl+clic</kbd> sur une balise d'extension d'un <code>plugin.xml</code> existant pour sauter à la déclaration de l'EP.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <div class="step-body">
+              <h4>Lire le code JetBrains open source</h4>
+              <p>Lire le code d'un plugin JetBrains open source qui fait quelque chose de similaire à ce que vous voulez implémenter.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S2 : Catalogue UI -->
+    <section class="tuto-section alt-bg" id="s2">
+      <div class="section-inner">
+        <div class="section-label">Section 2</div>
+        <h2 class="section-title">Catalogue — Interface et édition</h2>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr><th>Besoin</th><th>Balise plugin.xml</th><th>Classe/interface</th><th>Visible dans l'IDE comme</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Commande</strong></td>
+                <td><code>&lt;action&gt;</code></td>
+                <td><code>AnAction</code></td>
+                <td>Entrée de menu, raccourci, Search Everywhere</td>
+              </tr>
+              <tr>
+                <td><strong>Panneau latéral/bas</strong></td>
+                <td><code>&lt;toolWindow&gt;</code></td>
+                <td><code>ToolWindowFactory</code></td>
+                <td>Onglet sur le bord de l'IDE</td>
+              </tr>
+              <tr>
+                <td>Notification</td>
+                <td><code>&lt;notificationGroup&gt;</code></td>
+                <td><code>NotificationGroupManager</code> (API)</td>
+                <td>Bulle en bas à droite, Events log</td>
+              </tr>
+              <tr>
+                <td><strong>Problème signalé dans le code</strong></td>
+                <td><code>&lt;localInspection&gt;</code></td>
+                <td><code>AbstractBaseJavaLocalInspectionTool</code></td>
+                <td>Soulignement + panneau Problems + <kbd>Alt+Entrée</kbd></td>
+              </tr>
+              <tr>
+                <td>Action contextuelle sur le code</td>
+                <td><code>&lt;intentionAction&gt;</code></td>
+                <td><code>IntentionAction</code> / <code>PsiElementBaseIntentionAction</code></td>
+                <td>Ampoule / <kbd>Alt+Entrée</kbd></td>
+              </tr>
+              <tr>
+                <td>Marquage dans le code (sans inspection)</td>
+                <td><code>&lt;annotator&gt;</code></td>
+                <td><code>Annotator</code></td>
+                <td>Soulignement, surlignage, tooltip</td>
+              </tr>
+              <tr>
+                <td>Icône dans la gouttière</td>
+                <td><code>&lt;codeInsight.lineMarkerProvider&gt;</code></td>
+                <td><code>LineMarkerProvider</code> / <code>RelatedItemLineMarkerProvider</code></td>
+                <td>Icône à gauche des numéros de ligne</td>
+              </tr>
+              <tr>
+                <td>Texte inséré dans le code (hints)</td>
+                <td><code>&lt;codeInsight.inlayProvider&gt;</code></td>
+                <td><code>InlayHintsProvider</code></td>
+                <td>Annotations grises entre les tokens</td>
+              </tr>
+              <tr>
+                <td>Page de réglages</td>
+                <td><code>&lt;projectConfigurable&gt;</code> / <code>&lt;applicationConfigurable&gt;</code></td>
+                <td><code>Configurable</code> (ou <code>BoundConfigurable</code>)</td>
+                <td>Settings → Tools → ma page</td>
+              </tr>
+              <tr>
+                <td>Widget barre d'état</td>
+                <td><code>&lt;statusBarWidgetFactory&gt;</code></td>
+                <td><code>StatusBarWidgetFactory</code></td>
+                <td>Zone en bas de l'IDE</td>
+              </tr>
+              <tr>
+                <td>Complétion de code</td>
+                <td><code>&lt;completion.contributor&gt;</code></td>
+                <td><code>CompletionContributor</code></td>
+                <td>Suggestions <kbd>Ctrl+Espace</kbd></td>
+              </tr>
+              <tr>
+                <td>Décoration dans la vue Project</td>
+                <td><code>&lt;projectViewNodeDecorator&gt;</code></td>
+                <td><code>ProjectViewNodeDecorator</code></td>
+                <td>Texte/icône à côté des fichiers</td>
+              </tr>
+              <tr>
+                <td>Nouveau type de fichier</td>
+                <td><code>&lt;fileType&gt;</code></td>
+                <td><code>FileType</code>, <code>LanguageFileType</code></td>
+                <td>Icône et éditeur dédiés</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- S3 : Services -->
+    <section class="tuto-section" id="s3">
+      <div class="section-inner">
+        <div class="section-label">Section 3</div>
+        <h2 class="section-title">Catalogue — Services, démarrage, événements</h2>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Besoin</th><th>Mécanisme</th><th>Détail</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Singleton à portée projet</td>
+                <td><code>@Service(Service.Level.PROJECT)</code> sur la classe</td>
+                <td>Constructeur avec <code>Project</code> en paramètre autorisé ; accès via <code>project.getService(X.class)</code></td>
+              </tr>
+              <tr>
+                <td>Singleton à portée application</td>
+                <td><code>@Service</code> sur la classe</td>
+                <td>Accès via <code>ApplicationManager.getApplication().getService(X.class)</code></td>
+              </tr>
+              <tr>
+                <td>Tâche à l'ouverture d'un projet</td>
+                <td><code>&lt;postStartupActivity implementation=...&gt;</code></td>
+                <td>Interface <code>ProjectActivity</code> (suspend en Kotlin) ; ancienne <code>StartupActivity</code> dépréciée</td>
+              </tr>
+              <tr>
+                <td>Écoute d'événements globaux</td>
+                <td><code>&lt;applicationListeners&gt;&lt;listener class topic&gt;</code></td>
+                <td>Ex. topic <code>FileEditorManagerListener</code>, <code>BulkFileListener</code></td>
+              </tr>
+              <tr>
+                <td>Persistance de réglages</td>
+                <td><code>PersistentStateComponent&lt;State&gt;</code> + <code>@State</code></td>
+                <td>Écrit un XML dans la config de l'IDE</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="concept-grid">
+          <div class="concept-card">
+            <div class="concept-tag">Service projet — XML</div>
+            <h3>Alternative XML à l'annotation</h3>
+            <div class="code-block-wrapper" style="margin:0">
+              <div class="code-header"><span class="code-lang">XML</span></div>
+              <pre class="code-block" style="font-size:0.78rem"><code><span class="xml-tag">&lt;projectService</span>
+    <span class="xml-attr">serviceImplementation</span>=<span class="xml-str">"fr.monequipe.sae.services.TraceStore"</span><span class="xml-tag">/&gt;</span></code></pre>
+            </div>
+          </div>
+          <div class="concept-card">
+            <div class="concept-tag">Listener — XML</div>
+            <h3>Listener sur le message bus</h3>
+            <div class="code-block-wrapper" style="margin:0">
+              <div class="code-header"><span class="code-lang">XML</span></div>
+              <pre class="code-block" style="font-size:0.78rem"><code><span class="xml-tag">&lt;projectListeners&gt;</span>
+    <span class="xml-tag">&lt;listener</span>
+        <span class="xml-attr">class</span>=<span class="xml-str">"fr.monequipe.sae.EditorChangeListener"</span>
+        <span class="xml-attr">topic</span>=<span class="xml-str">"com.intellij.openapi.fileEditor.FileEditorManagerListener"</span><span class="xml-tag">/&gt;</span>
+<span class="xml-tag">&lt;/projectListeners&gt;</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S4 : Exécution -->
+    <section class="tuto-section alt-bg" id="s4">
+      <div class="section-inner">
+        <div class="section-label">Section 4</div>
+        <h2 class="section-title">Catalogue — Exécution et débogage (axe dynamique)</h2>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Besoin</th><th>Balise / classe</th><th>Usage pour la SAE</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Ajouter des options JVM à un lancement Java</td>
+                <td><code>&lt;java.programPatcher&gt;</code> • <code>JavaProgramPatcher</code></td>
+                <td>Injecter <code>-javaagent:</code> dans les runs normaux</td>
+              </tr>
+              <tr>
+                <td>Modifier une configuration de run existante</td>
+                <td><code>&lt;runConfigurationExtension&gt;</code> • <code>RunConfigurationExtension</code></td>
+                <td>Alternative plus fine : agir selon le type de run configuration</td>
+              </tr>
+              <tr>
+                <td>Nouvel "exécuteur" (bouton Run personnalisé)</td>
+                <td><code>&lt;executor&gt;</code> • <code>ProgramRunner</code></td>
+                <td>Un bouton "Run with analysis" distinct de Run et Debug</td>
+              </tr>
+              <tr>
+                <td>Nouveau type de configuration de run</td>
+                <td><code>&lt;configurationType&gt;</code> • <code>ConfigurationType</code></td>
+                <td>Plus lourd ; à éviter au début</td>
+              </tr>
+              <tr>
+                <td>Observer le debugger</td>
+                <td>API <code>XDebuggerManager</code>, <code>XDebugSessionListener</code></td>
+                <td>Lire valeurs et pile d'une session de debug en cours</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- S5 : Exemples XML -->
+    <section class="tuto-section" id="s5">
+      <div class="section-inner">
+        <div class="section-label">Section 5</div>
+        <h2 class="section-title">Exemples XML prêts à adapter</h2>
+
+        <h3 class="subsection-title">Inspection (<code>localInspection</code>)</h3>
+        <div class="callout callout-info">
+          <div class="callout-icon">📄</div>
+          <div>
+            Fichier obligatoire : <code>resources/inspectionDescriptions/<strong>ComplexCondition</strong>.html</code> — le nom correspond au <code>shortName</code>.
+          </div>
+        </div>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">XML</span>
+            <span class="code-file">plugin.xml — inspection</span>
+            <button class="copy-btn" data-target="xml-inspection" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="xml-inspection"><code><span class="xml-tag">&lt;extensions</span> <span class="xml-attr">defaultExtensionNs</span>=<span class="xml-str">"com.intellij"</span><span class="xml-tag">&gt;</span>
+    <span class="xml-tag">&lt;localInspection</span> <span class="xml-attr">language</span>=<span class="xml-str">"JAVA"</span>
+                     <span class="xml-attr">shortName</span>=<span class="xml-str">"ComplexCondition"</span>
+                     <span class="xml-attr">displayName</span>=<span class="xml-str">"Condition complexe"</span>
+                     <span class="xml-attr">groupName</span>=<span class="xml-str">"SAE Analyzer"</span>
+                     <span class="xml-attr">enabledByDefault</span>=<span class="xml-str">"true"</span>
+                     <span class="xml-attr">level</span>=<span class="xml-str">"WARNING"</span>
+                     <span class="xml-attr">implementationClass</span>=<span class="xml-str">"fr.monequipe.sae.analysis.ComplexConditionInspection"</span><span class="xml-tag">/&gt;</span>
+<span class="xml-tag">&lt;/extensions&gt;</span></code></pre>
+        </div>
+
+        <h3 class="subsection-title">Gutter (icônes en marge)</h3>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">XML</span>
+            <span class="code-file">plugin.xml — lineMarkerProvider</span>
+            <button class="copy-btn" data-target="xml-gutter" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="xml-gutter"><code><span class="xml-tag">&lt;codeInsight.lineMarkerProvider</span> <span class="xml-attr">language</span>=<span class="xml-str">"JAVA"</span>
+    <span class="xml-attr">implementationClass</span>=<span class="xml-str">"fr.monequipe.sae.ui.CoverageLineMarkerProvider"</span><span class="xml-tag">/&gt;</span></code></pre>
+        </div>
+
+        <h3 class="subsection-title">Page de réglages</h3>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">XML</span>
+            <span class="code-file">plugin.xml — projectConfigurable</span>
+            <button class="copy-btn" data-target="xml-settings" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="xml-settings"><code><span class="xml-tag">&lt;projectConfigurable</span> <span class="xml-attr">parentId</span>=<span class="xml-str">"tools"</span>
+                     <span class="xml-attr">instance</span>=<span class="xml-str">"fr.monequipe.sae.ui.AnalyzerConfigurable"</span>
+                     <span class="xml-attr">id</span>=<span class="xml-str">"fr.monequipe.sae.settings"</span>
+                     <span class="xml-attr">displayName</span>=<span class="xml-str">"SAE Analyzer"</span><span class="xml-tag">/&gt;</span></code></pre>
+        </div>
+
+        <h3 class="subsection-title">Action avec raccourci clavier</h3>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">XML</span>
+            <span class="code-file">plugin.xml — action complète</span>
+            <button class="copy-btn" data-target="xml-action" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="xml-action"><code><span class="xml-tag">&lt;actions&gt;</span>
+    <span class="xml-tag">&lt;action</span> <span class="xml-attr">id</span>=<span class="xml-str">"fr.monequipe.sae.RunAnalysis"</span>
+            <span class="xml-attr">class</span>=<span class="xml-str">"fr.monequipe.sae.actions.RunAnalysisAction"</span>
+            <span class="xml-attr">text</span>=<span class="xml-str">"Analyser la méthode"</span>
+            <span class="xml-attr">description</span>=<span class="xml-str">"Lance l'analyse statique sur la méthode sous le curseur"</span><span class="xml-tag">&gt;</span>
+        <span class="xml-tag">&lt;add-to-group</span> <span class="xml-attr">group-id</span>=<span class="xml-str">"AnalyzeMenu"</span> <span class="xml-attr">anchor</span>=<span class="xml-str">"last"</span><span class="xml-tag">/&gt;</span>
+        <span class="xml-tag">&lt;add-to-group</span> <span class="xml-attr">group-id</span>=<span class="xml-str">"EditorPopupMenu"</span> <span class="xml-attr">anchor</span>=<span class="xml-str">"last"</span><span class="xml-tag">/&gt;</span>
+        <span class="xml-tag">&lt;keyboard-shortcut</span> <span class="xml-attr">keymap</span>=<span class="xml-str">"$default"</span> <span class="xml-attr">first-keystroke</span>=<span class="xml-str">"ctrl alt G"</span><span class="xml-tag">/&gt;</span>
+    <span class="xml-tag">&lt;/action&gt;</span>
+<span class="xml-tag">&lt;/actions&gt;</span></code></pre>
+        </div>
+
+        <h3 class="subsection-title">ToolWindow + postStartupActivity</h3>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">XML</span>
+            <span class="code-file">plugin.xml — toolWindow + startup</span>
+            <button class="copy-btn" data-target="xml-toolwindow" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="xml-toolwindow"><code><span class="xml-tag">&lt;extensions</span> <span class="xml-attr">defaultExtensionNs</span>=<span class="xml-str">"com.intellij"</span><span class="xml-tag">&gt;</span>
+
+    <span class="xml-tag">&lt;toolWindow</span> <span class="xml-attr">id</span>=<span class="xml-str">"SAE Analyzer"</span>
+                <span class="xml-attr">factoryClass</span>=<span class="xml-str">"fr.monequipe.sae.ui.AnalyzerToolWindowFactory"</span>
+                <span class="xml-attr">anchor</span>=<span class="xml-str">"right"</span><span class="xml-tag">/&gt;</span>
+
+    <span class="xml-tag">&lt;postStartupActivity</span>
+        <span class="xml-attr">implementation</span>=<span class="xml-str">"fr.monequipe.sae.services.ProjectScanActivity"</span><span class="xml-tag">/&gt;</span>
+
+    <span class="xml-tag">&lt;notificationGroup</span> <span class="xml-attr">id</span>=<span class="xml-str">"SAE Notifications"</span> <span class="xml-attr">displayType</span>=<span class="xml-str">"BALLOON"</span><span class="xml-tag">/&gt;</span>
+
+<span class="xml-tag">&lt;/extensions&gt;</span></code></pre>
+        </div>
+
+        <h3 class="subsection-title">JavaProgramPatcher (axe dynamique)</h3>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">XML</span>
+            <span class="code-file">plugin.xml — programPatcher</span>
+            <button class="copy-btn" data-target="xml-patcher" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="xml-patcher"><code><span class="xml-tag">&lt;extensions</span> <span class="xml-attr">defaultExtensionNs</span>=<span class="xml-str">"com.intellij"</span><span class="xml-tag">&gt;</span>
+    <span class="xml-tag">&lt;java.programPatcher</span>
+        <span class="xml-attr">implementation</span>=<span class="xml-str">"fr.monequipe.sae.dynamic.AgentProgramPatcher"</span><span class="xml-tag">/&gt;</span>
+<span class="xml-tag">&lt;/extensions&gt;</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S6 : Groupes menus -->
+    <section class="tuto-section alt-bg" id="s6">
+      <div class="section-inner">
+        <div class="section-label">Section 6</div>
+        <h2 class="section-title">Groupes de menus pour <code>&lt;add-to-group&gt;</code></h2>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>group-id</th><th>Emplacement</th></tr></thead>
+            <tbody>
+              <tr><td><code>ToolsMenu</code></td><td>Menu <strong>Tools</strong></td></tr>
+              <tr><td><code>EditorPopupMenu</code></td><td>Clic droit dans l'éditeur</td></tr>
+              <tr><td><code>ProjectViewPopupMenu</code></td><td>Clic droit dans la vue Project</td></tr>
+              <tr><td><code>CodeMenu</code></td><td>Menu <strong>Code</strong></td></tr>
+              <tr><td><code>AnalyzeMenu</code></td><td>Menu <strong>Analyze</strong> (pertinent pour une analyse de code ✅)</td></tr>
+              <tr><td><code>MainToolBar</code></td><td>Barre d'outils principale</td></tr>
+              <tr><td><code>GenerateGroup</code></td><td>Menu Code → Generate (<kbd>Alt+Inser</kbd>)</td></tr>
+              <tr><td><code>EditorGutterPopupMenu</code></td><td>Clic droit dans la marge (numéros de ligne)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-info">
+          <div class="callout-icon">🔍</div>
+          <div>
+            Les IDs de groupes évoluent peu mais existent dans la source de la plateforme (fichiers XML <code>PlatformActions.xml</code>, etc.). En cas de doute, chercher <code>&lt;group id=...&gt;</code> dans ces fichiers ou via <a href="https://jb.gg/ipe" target="_blank" rel="noopener" style="color:var(--primary-400)">jb.gg/ipe</a>.
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Récapitulatif — Actions vs Extension Points</h3>
+        <div class="compare-grid">
+          <div class="compare-card compare-static">
+            <div class="compare-icon">🖱️</div>
+            <h3>Action (<code>&lt;action&gt;</code>)</h3>
+            <p>Déclencheur <strong>manuel</strong> — l'utilisateur doit cliquer (menu, bouton, raccourci clavier) pour que l'action s'exécute.</p>
+            <p><strong>Classe de base :</strong> <code>AnAction</code></p>
+            <p><strong>Méthode :</strong> <code>actionPerformed(AnActionEvent e)</code></p>
+          </div>
+          <div class="compare-card" style="background:linear-gradient(135deg,rgba(168,85,247,0.08),var(--bg-700));border-color:rgba(168,85,247,0.5)">
+            <div class="compare-icon">🔄</div>
+            <h3>Extension Point (<code>&lt;extensions&gt;</code>)</h3>
+            <p>IntelliJ appelle <strong>automatiquement</strong> à un moment précis de son cycle de vie, sans intervention de l'utilisateur.</p>
+            <p><strong>Exemples :</strong> ouverture de fichier, frappe au clavier, ouverture du projet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand"><span>🔌</span><span>Extensions &amp; plugin.xml</span></div>
+      <div class="footer-links">
+        <a href="index.html">← Tutoriel</a>
+        <a href="annexe.html">📖 Analyse Statique</a>
+        <a href="dynamique.html">⚡ Analyse Dynamique</a>
+        <a href="https://jb.gg/ipe" target="_blank" rel="noopener">Platform Explorer ↗</a>
+      </div>
+      <div class="footer-credits">Saksouk Mahdi &amp; Aubert Florian — IUT Informatique, SAE A3-S5</div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

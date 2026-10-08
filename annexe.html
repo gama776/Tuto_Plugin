@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Documentation Analyse Statique — Plugin IntelliJ SAE 3A</title>
-  <meta name="description" content="Documentation complète de l'analyse statique pour le plugin IntelliJ IDEA : PSI, actions, extension points, affichage des résultats. SAE A3-S5 IUT Informatique." />
+  <title>Analyse Statique — PSI — Plugin IntelliJ SAE 3A</title>
+  <meta name="description" content="Documentation complète de l'analyse statique PSI pour le plugin IntelliJ IDEA : classes, navigation, visiteurs, exemples. SAE A3-S5." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -12,672 +12,540 @@
 </head>
 <body class="annexe-page">
 
-  <!-- ── NAVBAR ── -->
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
       <div class="nav-brand">
-        <a href="index.html" class="nav-back">← Retour au tutoriel</a>
+        <span class="nav-logo">⚙️</span>
+        <span class="nav-title">IntelliJ Plugin</span>
+        <span class="nav-badge">SAE A3-S5</span>
       </div>
       <ul class="nav-links">
-        <li><a href="#s1" class="nav-link">Statique vs Dynamique</a></li>
-        <li><a href="#s2" class="nav-link">Mécanismes</a></li>
-        <li><a href="#s3" class="nav-link">PSI</a></li>
-        <li><a href="#s4" class="nav-link">Système</a></li>
-        <li><a href="#s5" class="nav-link">Affichage</a></li>
-        <li><a href="#s6" class="nav-link">Exemple</a></li>
+        <li><a href="index.html" class="nav-link">Tutoriel</a></li>
+        <li class="nav-sep"></li>
+        <li><a href="annexe.html" class="nav-doc-link active-doc">📖 Statique</a></li>
+        <li><a href="dynamique.html" class="nav-doc-link">⚡ Dynamique</a></li>
+        <li><a href="extensions.html" class="nav-doc-link">🔌 Extensions</a></li>
       </ul>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </nav>
 
-  <!-- ── HERO ANNEXE ── -->
   <header class="hero hero-small" id="annexe-hero">
     <div class="hero-bg">
-      <div class="orb orb-1" style="background: radial-gradient(circle, rgba(16,185,129,0.35) 0%, transparent 70%)"></div>
-      <div class="orb orb-2" style="background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%)"></div>
+      <div class="orb orb-1" style="background:radial-gradient(circle,rgba(99,102,241,0.35) 0%,transparent 70%)"></div>
+      <div class="orb orb-2" style="background:radial-gradient(circle,rgba(16,185,129,0.28) 0%,transparent 70%)"></div>
       <div class="grid-overlay"></div>
     </div>
     <div class="hero-content">
       <div class="hero-meta">
-        <a href="index.html" class="hero-chip chip-link">← Tutoriel principal</a>
-        <span class="hero-chip">Annexe</span>
+        <a href="index.html" class="hero-chip chip-link">← Tutoriel</a>
+        <span class="hero-chip">Documentation</span>
+        <span class="hero-chip">Section 05</span>
       </div>
-      <h1 class="hero-title">
-        Documentation <span class="gradient-text-green">Analyse Statique</span>
-      </h1>
+      <h1 class="hero-title">Analyse <span class="gradient-text">Statique</span> — PSI</h1>
       <p class="hero-subtitle">
-        Tout ce qui est nécessaire pour développer la partie <strong>analyse statique</strong>
-        du plugin : PSI, actions, extension points, et affichage des résultats.
+        Analyser le code sans l'exécuter via le <strong>Program Structure Interface</strong>.
+        Classes, navigation, visiteurs, résolution de symboles, exemples complets.
       </p>
     </div>
   </header>
 
-  <!-- ── TABLE DES MATIÈRES ── -->
   <div class="toc-wrapper" id="toc">
     <div class="toc-inner">
       <h2 class="toc-title">Table des matières</h2>
       <ol class="toc-list">
-        <li><a href="#s1">Statique vs Dynamique</a></li>
-        <li><a href="#s2">Les deux mécanismes d'extension</a>
+        <li><a href="#s1">Qu'est-ce que le PSI</a></li>
+        <li><a href="#s2">Classes PSI Java</a>
           <ul>
-            <li><a href="#s2-1">Actions</a></li>
-            <li><a href="#s2-2">Extension Points</a></li>
+            <li><a href="#s2-struct">Structure</a></li>
+            <li><a href="#s2-stmts">Instructions</a></li>
+            <li><a href="#s2-expr">Expressions</a></li>
           </ul>
         </li>
-        <li><a href="#s3">Classes PSI pour parcourir le code</a>
-          <ul>
-            <li><a href="#s3-1">Classes racines</a></li>
-            <li><a href="#s3-2">Structure du code</a></li>
-            <li><a href="#s3-3">Structures de contrôle</a></li>
-            <li><a href="#s3-4">Expressions</a></li>
-            <li><a href="#s3-5">Navigation dans l'arbre</a></li>
-          </ul>
-        </li>
-        <li><a href="#s4">Classes système (hors PSI)</a></li>
-        <li><a href="#s5">Où afficher les résultats</a></li>
-        <li><a href="#s6">Exemple complet</a></li>
-        <li><a href="#s7">Structure générale de plugin.xml</a></li>
-
+        <li><a href="#s3">Obtenir le PSI</a></li>
+        <li><a href="#s4">Parcourir l'arbre</a></li>
+        <li><a href="#s5">Exemple : lister les variables</a></li>
+        <li><a href="#s6">Exemple : conditions atomiques (MC/DC)</a></li>
+        <li><a href="#s7">Résolution et recherche</a></li>
+        <li><a href="#s8">Modifier le code</a></li>
+        <li><a href="#s9">Outils & Pièges</a></li>
       </ol>
     </div>
   </div>
 
-  <!-- ── MAIN ── -->
   <main class="main-content annexe-main">
 
-    <!-- S1 -->
+    <!-- S1 : PSI -->
     <section class="tuto-section" id="s1">
       <div class="section-inner">
         <div class="section-label">Section 1</div>
-        <h2 class="section-title">Statique vs Dynamique</h2>
-        <div class="compare-grid">
-          <div class="compare-card compare-static">
-            <div class="compare-icon">📖</div>
-            <h3>Analyse Statique</h3>
-            <p>
-              Lit le texte du code source et en déduit des informations (variables déclarées,
-              structure des branches, conditions composées) <strong>sans jamais exécuter le programme</strong>.
-              Tout se base sur le <strong>PSI</strong> (Program Structure Interface), l'arbre syntaxique
-              qu'IntelliJ construit automatiquement pour chaque fichier ouvert.
-            </p>
-            <div class="compare-badge">✅ Couvert par ce document</div>
-          </div>
-          <div class="compare-card compare-dynamic">
-            <div class="compare-icon">▶️</div>
-            <h3>Analyse Dynamique</h3>
-            <p>
-              Basée sur l'<strong>exécution réelle</strong> du programme.
-              JaCoCo, instrumentation du bytecode…
-              Cette partie fait l'objet d'un document séparé.
-            </p>
-            <div class="compare-badge compare-badge-off">❌ Non couvert ici</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- S2 -->
-    <section class="tuto-section alt-bg" id="s2">
-      <div class="section-inner">
-        <div class="section-label">Section 2</div>
-        <h2 class="section-title">Les deux mécanismes d'extension</h2>
+        <h2 class="section-title">Qu'est-ce que le PSI ?</h2>
         <p class="section-lead">
-          Un plugin IntelliJ s'accroche à l'IDE de deux façons différentes, déclarées dans <code>plugin.xml</code>.
+          <strong>PSI = Program Structure Interface.</strong> Pour chaque fichier, la plateforme construit un arbre :
+          <code>PsiFile</code> (racine) → <code>PsiElement</code> (nœuds) → feuilles (tokens, espaces, commentaires).
         </p>
-
-        <div class="callout callout-key" id="callout-key-diff">
-          <div class="callout-icon">🔑</div>
-          <div><strong>Différence clé :</strong> une action attend un clic, un extension point réagit à un événement de l'IDE.</div>
-        </div>
-
-        <!-- 2.1 Actions -->
-        <h3 class="subsection-title" id="s2-1">2.1 Les actions (<code>&lt;actions&gt;</code>)</h3>
-        <p>
-          Une action est un <strong>déclencheur manuel</strong> : l'utilisateur doit cliquer
-          (menu, bouton, raccourci clavier) pour qu'elle s'exécute.
-        </p>
-
-        <div class="info-pills">
-          <div class="pill">
-            <strong>Classe de base :</strong>
-            <code>com.intellij.openapi.actionSystem.AnAction</code>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="info-card-icon">🌳</div>
+            <h3>Arbre syntaxique concret</h3>
+            <p>Contient <em>tout</em> le texte, y compris espaces et commentaires — pas un AST abstrait.</p>
           </div>
-          <div class="pill">
-            <strong>Méthode à implémenter :</strong>
-            <code>actionPerformed(AnActionEvent e)</code>
+          <div class="info-card">
+            <div class="info-card-icon">🔍</div>
+            <h3>Enrichi</h3>
+            <p>On peut résoudre un identifiant vers sa déclaration (<code>resolve()</code>), obtenir le type, chercher des usages.</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-icon">🔄</div>
+            <h3>À jour</h3>
+            <p>Reflète le texte du Document après commit — synchronisé avec l'éditeur.</p>
           </div>
         </div>
 
-        <div class="code-block-wrapper">
-          <div class="code-header">
-            <span class="code-lang">Java</span>
-            <span class="code-file">MonAction.java</span>
-            <button class="copy-btn" data-target="code-action-java" aria-label="Copier">📋 Copier</button>
+        <h3 class="subsection-title">Exemple d'arbre pour <code>int x = a + 1;</code></h3>
+        <div class="tree-container">
+          <div class="tree-title">Arbre PSI simplifié</div>
+          <div class="file-tree">
+            <div class="tree-node root psi-root-node">PsiMethod</div>
+            <div class="tree-node l1">└─ PsiCodeBlock</div>
+            <div class="tree-node l2">└─ PsiDeclarationStatement</div>
+            <div class="tree-node l3">└─ <span class="hl-class">PsiLocalVariable</span> <code>x</code></div>
+            <div class="tree-node l4">├─ <span class="hl-type">PsiTypeElement</span> <code>int</code></div>
+            <div class="tree-node l4">├─ PsiIdentifier <code>x</code></div>
+            <div class="tree-node l4">└─ <span class="hl-expr">PsiBinaryExpression</span> <code>a + 1</code></div>
+            <div class="tree-node l5">├─ PsiReferenceExpression <code>a</code></div>
+            <div class="tree-node l5">├─ PsiJavaToken <code>+</code></div>
+            <div class="tree-node l5">└─ PsiLiteralExpression <code>1</code></div>
           </div>
-          <pre class="code-block" id="code-action-java"><code><span class="java-ann">@Override</span>
-<span class="java-kw">public void</span> <span class="java-fn">actionPerformed</span>(<span class="java-ann">@NotNull</span> AnActionEvent e) {
-    <span class="java-comment">// Code exécuté au clic</span>
-}</code></pre>
-        </div>
-
-        <div class="code-block-wrapper">
-          <div class="code-header">
-            <span class="code-lang">XML</span>
-            <span class="code-file">plugin.xml — déclaration action</span>
-            <button class="copy-btn" data-target="code-action-xml" aria-label="Copier">📋 Copier</button>
-          </div>
-          <pre class="code-block" id="code-action-xml"><code><span class="xml-tag">&lt;actions&gt;</span>
-    <span class="xml-tag">&lt;action</span> <span class="xml-attr">id</span>=<span class="xml-str">"fr.umontpellier.iut.MonAction"</span>
-            <span class="xml-attr">class</span>=<span class="xml-str">"fr.umontpellier.iut.MonAction"</span>
-            <span class="xml-attr">text</span>=<span class="xml-str">"Mon action"</span>
-            <span class="xml-attr">description</span>=<span class="xml-str">"Description affichée en infobulle"</span><span class="xml-tag">&gt;</span>
-        <span class="xml-tag">&lt;add-to-group</span> <span class="xml-attr">group-id</span>=<span class="xml-str">"EditorPopupMenu"</span> <span class="xml-attr">anchor</span>=<span class="xml-str">"last"</span><span class="xml-tag">/&gt;</span>
-    <span class="xml-tag">&lt;/action&gt;</span>
-<span class="xml-tag">&lt;/actions&gt;</span></code></pre>
-        </div>
-
-        <h4 class="table-title">Groupes disponibles pour <code>add-to-group</code></h4>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr><th>group-id</th><th>Emplacement</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><code>EditorPopupMenu</code></td><td>Clic droit dans le texte de l'éditeur</td></tr>
-              <tr><td><code>EditorGutterPopupMenu</code></td><td>Clic droit dans la marge (numéros de ligne)</td></tr>
-              <tr><td><code>ProjectViewPopupMenu</code></td><td>Clic droit sur un fichier/dossier dans l'arborescence du projet</td></tr>
-              <tr><td><code>MainMenu</code></td><td>Barre de menu principale (en haut)</td></tr>
-              <tr><td><code>ToolsMenu</code></td><td>Sous-menu <strong>Tools</strong> existant</td></tr>
-              <tr><td><code>ToolbarActions</code></td><td>Barre d'outils (icônes)</td></tr>
-            </tbody>
-          </table>
         </div>
 
         <div class="callout callout-info">
           <div class="callout-icon">💡</div>
           <div>
-            Une action peut apparaître dans <strong>plusieurs groupes à la fois</strong>
-            (plusieurs balises <code>&lt;add-to-group&gt;</code>), et peut avoir un raccourci clavier :
-            <br/><code class="inline-code">&lt;keyboard-shortcut keymap="$default" first-keystroke="ctrl alt G"/&gt;</code>
+            <strong>Outil indispensable :</strong> activer le <strong>PSI Viewer</strong> dans l'IDE sandbox
+            (<em>Tools → View PSI Structure of Current File</em>) pour visualiser l'arbre réel avant d'écrire un visiteur.
+            Nécessite l'option JVM <code>-Didea.is.internal=true</code> dans <code>runIde</code>.
           </div>
-        </div>
-
-        <!-- 2.2 Extension Points -->
-        <h3 class="subsection-title" id="s2-2">2.2 Les extension points (<code>&lt;extensions&gt;</code>)</h3>
-        <p>
-          Un extension point est un mécanisme qu'IntelliJ appelle <strong>automatiquement</strong>,
-          à un moment précis de son cycle de vie (ouverture de fichier, frappe au clavier,
-          ouverture du projet), <em>sans intervention de l'utilisateur</em>.
-        </p>
-
-        <div class="ep-grid">
-
-          <div class="ep-card" id="ep-local-inspection">
-            <div class="ep-tag">localInspection</div>
-            <p>Tourne en continu pendant que l'utilisateur écrit du code, souligne directement dans l'éditeur. C'est le mécanisme utilisé pour la détection de conditions composées.</p>
-            <div class="ep-class">Classe : <code>AbstractBaseJavaLocalInspectionTool</code></div>
-            <div class="code-block-wrapper ep-code">
-              <div class="code-header">
-                <span class="code-lang">XML</span>
-                <button class="copy-btn" data-target="ep-code-1" aria-label="Copier">📋</button>
-              </div>
-              <pre class="code-block" id="ep-code-1"><code><span class="xml-tag">&lt;localInspection</span>
-    <span class="xml-attr">language</span>=<span class="xml-str">"JAVA"</span>
-    <span class="xml-attr">displayName</span>=<span class="xml-str">"Nom affiché dans Settings &gt; Inspections"</span>
-    <span class="xml-attr">groupName</span>=<span class="xml-str">"Catégorie affichée"</span>
-    <span class="xml-attr">enabledByDefault</span>=<span class="xml-str">"true"</span>
-    <span class="xml-attr">level</span>=<span class="xml-str">"WARNING"</span>
-    <span class="xml-attr">implementationClass</span>=<span class="xml-str">"fr.umontpellier.iut.MonInspection"</span><span class="xml-tag">/&gt;</span></code></pre>
-            </div>
-          </div>
-
-          <div class="ep-card" id="ep-toolwindow">
-            <div class="ep-tag">toolWindow</div>
-            <p>Déclare un panneau latéral persistant. Permet d'afficher un résultat structuré (liste, arbre, graphe) sans bloquer l'utilisateur.</p>
-            <div class="ep-class">Classe : <code>MyToolWindowFactory</code></div>
-            <div class="code-block-wrapper ep-code">
-              <div class="code-header">
-                <span class="code-lang">XML</span>
-                <button class="copy-btn" data-target="ep-code-2" aria-label="Copier">📋</button>
-              </div>
-              <pre class="code-block" id="ep-code-2"><code><span class="xml-tag">&lt;toolWindow</span> <span class="xml-attr">id</span>=<span class="xml-str">"MonToolWindow"</span>
-            <span class="xml-attr">factoryClass</span>=<span class="xml-str">"fr.umontpellier.iut.MyToolWindowFactory"</span>
-            <span class="xml-attr">anchor</span>=<span class="xml-str">"right"</span><span class="xml-tag">/&gt;</span></code></pre>
-            </div>
-          </div>
-
-          <div class="ep-card" id="ep-startup">
-            <div class="ep-tag">postStartupActivity</div>
-            <p>Code exécuté une fois à l'ouverture du projet. Utile pour un pré-calcul global (ex. scanner tout le projet au démarrage).</p>
-            <div class="code-block-wrapper ep-code">
-              <div class="code-header">
-                <span class="code-lang">XML</span>
-                <button class="copy-btn" data-target="ep-code-3" aria-label="Copier">📋</button>
-              </div>
-              <pre class="code-block" id="ep-code-3"><code><span class="xml-tag">&lt;postStartupActivity</span> <span class="xml-attr">implementation</span>=<span class="xml-str">"fr.umontpellier.iut.MyStartupActivity"</span><span class="xml-tag">/&gt;</span></code></pre>
-            </div>
-          </div>
-
-          <div class="ep-card" id="ep-notification">
-            <div class="ep-tag">notificationGroup</div>
-            <p>Pour des alertes non bloquantes (ballon en bas à droite), plus adapté qu'une popup pour un résultat qui arrive après un traitement.</p>
-            <div class="code-block-wrapper ep-code">
-              <div class="code-header">
-                <span class="code-lang">XML</span>
-                <button class="copy-btn" data-target="ep-code-4" aria-label="Copier">📋</button>
-              </div>
-              <pre class="code-block" id="ep-code-4"><code><span class="xml-tag">&lt;notificationGroup</span> <span class="xml-attr">id</span>=<span class="xml-str">"SAE Notifications"</span> <span class="xml-attr">displayType</span>=<span class="xml-str">"BALLOON"</span><span class="xml-tag">/&gt;</span></code></pre>
-            </div>
-          </div>
-
-          <div class="ep-card" id="ep-intention">
-            <div class="ep-tag ep-tag-advanced">intentionAction</div>
-            <p>Les ampoules jaunes 💡 qui proposent une correction rapide dans l'éditeur. <em>Avancé, non prioritaire.</em></p>
-          </div>
-
         </div>
       </div>
     </section>
 
-    <!-- S3 PSI -->
+    <!-- S2 : Classes PSI -->
+    <section class="tuto-section alt-bg" id="s2">
+      <div class="section-inner">
+        <div class="section-label">Section 2</div>
+        <h2 class="section-title">Classes PSI Java à connaître</h2>
+
+        <!-- Structure -->
+        <h3 class="subsection-title" id="s2-struct">2.1 Structure du code</h3>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Classe</th><th>Représente</th><th>Méthodes clés</th></tr></thead>
+            <tbody>
+              <tr><td><code>PsiJavaFile</code></td><td>Un fichier <code>.java</code></td><td><code>getClasses()</code>, <code>getPackageName()</code>, <code>getImportList()</code></td></tr>
+              <tr>
+                <td><code>PsiClass</code></td>
+                <td>Classe, interface, enum, record, annotation (<code>PsiAnonymousClass</code>)</td>
+                <td><code>getName()</code>, <code>getQualifiedName()</code>, <code>getMethods()</code>, <code>getFields()</code>, <code>getInnerClasses()</code>, <code>getSuperClass()</code>, <code>isInterface()</code></td>
+              </tr>
+              <tr>
+                <td><code>PsiMethod</code></td>
+                <td>Méthode ou constructeur</td>
+                <td><code>getName()</code>, <code>getParameterList()</code>, <code>getReturnType()</code>, <code>getBody()</code>, <code>isConstructor()</code>, <code>getContainingClass()</code>, <code>findSuperMethods()</code></td>
+              </tr>
+              <tr><td><code>PsiParameter</code></td><td>Paramètre de méthode, for-each, catch, lambda</td><td><code>getType()</code>, <code>getName()</code></td></tr>
+              <tr><td><code>PsiField</code></td><td>Attribut de classe</td><td><code>getName()</code>, <code>getType()</code>, <code>getInitializer()</code></td></tr>
+              <tr><td><code>PsiVariable</code></td><td>Interface commune : champ, paramètre, variable locale</td><td><code>getName()</code>, <code>getType()</code>, <code>getInitializer()</code>, <code>hasModifierProperty(...)</code></td></tr>
+              <tr><td><code>PsiLocalVariable</code></td><td>Variable locale d'un bloc</td><td>Hérite de <code>PsiVariable</code></td></tr>
+              <tr><td><code>PsiModifierList</code></td><td>Modificateurs et annotations</td><td><code>hasModifierProperty(PsiModifier.STATIC)</code>, <code>getAnnotations()</code></td></tr>
+              <tr><td><code>PsiCodeBlock</code></td><td>Bloc <code>{ ... }</code></td><td><code>getStatements()</code>, <code>getLBrace()</code>, <code>getRBrace()</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Instructions -->
+        <h3 class="subsection-title" id="s2-stmts">2.2 Instructions (statements)</h3>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Classe</th><th>Code Java</th><th>Accesseurs</th></tr></thead>
+            <tbody>
+              <tr><td><code>PsiIfStatement</code></td><td><code>if / else</code></td><td><code>getCondition()</code>, <code>getThenBranch()</code>, <code>getElseBranch()</code></td></tr>
+              <tr><td><code>PsiWhileStatement</code></td><td><code>while</code></td><td><code>getCondition()</code>, <code>getBody()</code></td></tr>
+              <tr><td><code>PsiDoWhileStatement</code></td><td><code>do while</code></td><td><code>getCondition()</code>, <code>getBody()</code></td></tr>
+              <tr><td><code>PsiForStatement</code></td><td><code>for(;;)</code></td><td><code>getInitialization()</code>, <code>getCondition()</code>, <code>getUpdate()</code>, <code>getBody()</code></td></tr>
+              <tr><td><code>PsiForeachStatement</code></td><td><code>for (T x : coll)</code></td><td><code>getIterationParameter()</code>, <code>getIteratedValue()</code></td></tr>
+              <tr><td><code>PsiSwitchStatement</code></td><td><code>switch</code></td><td><code>getExpression()</code>, <code>getBody()</code></td></tr>
+              <tr><td><code>PsiTryStatement</code></td><td><code>try / catch / finally</code></td><td><code>getTryBlock()</code>, <code>getCatchSections()</code>, <code>getFinallyBlock()</code></td></tr>
+              <tr><td><code>PsiReturnStatement</code></td><td><code>return</code></td><td><code>getReturnValue()</code></td></tr>
+              <tr><td><code>PsiDeclarationStatement</code></td><td><code>int x = 1, y = 2;</code></td><td><code>getDeclaredElements()</code></td></tr>
+              <tr><td><code>PsiExpressionStatement</code></td><td><code>foo();</code></td><td><code>getExpression()</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Expressions -->
+        <h3 class="subsection-title" id="s2-expr">2.3 Expressions</h3>
+        <div class="callout callout-warning">
+          <div class="callout-icon">⚠️</div>
+          <div>
+            <strong>Piège classique :</strong> <code>a &amp;&amp; b &amp;&amp; c</code> n'est <em>pas</em> imbriqué en binaires. C'est
+            un seul nœud <code>PsiPolyadicExpression</code> avec <code>getOperands()</code>.
+            Toujours tester <code>instanceof PsiPolyadicExpression</code> avant <code>PsiBinaryExpression</code>.
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Classe</th><th>Exemple</th><th>Remarque</th></tr></thead>
+            <tbody>
+              <tr><td><code>PsiPolyadicExpression</code></td><td><code>a &amp;&amp; b &amp;&amp; c</code>, <code>x + y + z</code></td><td><code>getOperands()</code>, <code>getOperationTokenType()</code> → comparer à <code>JavaTokenType.ANDAND</code> / <code>OROR</code>, <strong>jamais</strong> par <code>toString()</code></td></tr>
+              <tr><td><code>PsiBinaryExpression</code></td><td><code>a + b</code></td><td>Deux opérandes : <code>getLOperand()</code>, <code>getROperand()</code></td></tr>
+              <tr><td><code>PsiPrefixExpression</code></td><td><code>!a</code>, <code>-x</code></td><td><code>getOperationTokenType()</code> (ex. <code>JavaTokenType.EXCL</code>)</td></tr>
+              <tr><td><code>PsiParenthesizedExpression</code></td><td><code>(a &amp;&amp; b)</code></td><td>Utiliser <code>PsiUtil.skipParenthesizedExprDown(expr)</code> pour traverser les parenthèses</td></tr>
+              <tr><td><code>PsiConditionalExpression</code></td><td><code>c ? x : y</code></td><td><code>getCondition()</code>, <code>getThenExpression()</code>, <code>getElseExpression()</code></td></tr>
+              <tr><td><code>PsiMethodCallExpression</code></td><td><code>list.add(x)</code></td><td><code>resolveMethod()</code>, <code>getMethodExpression()</code>, <code>getArgumentList()</code></td></tr>
+              <tr><td><code>PsiReferenceExpression</code></td><td><code>x</code>, <code>obj.field</code></td><td><code>resolve()</code>, <code>getQualifierExpression()</code>, <code>getReferenceName()</code></td></tr>
+              <tr><td><code>PsiAssignmentExpression</code></td><td><code>x = 3</code>, <code>x += 1</code></td><td><code>getLExpression()</code>, <code>getRExpression()</code></td></tr>
+              <tr><td><code>PsiLiteralExpression</code></td><td><code>42</code>, <code>"txt"</code></td><td><code>getValue()</code></td></tr>
+              <tr><td><code>PsiLambdaExpression</code></td><td><code>x -> x+1</code></td><td>—</td></tr>
+              <tr><td><code>PsiInstanceOfExpression</code></td><td><code>o instanceof A a</code></td><td>Introduit une <code>PsiPatternVariable</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-info">
+          <div class="callout-icon">🏷️</div>
+          <div><strong>Types :</strong> <code>PsiExpression.getType()</code> renvoie un <code>PsiType</code> (<code>PsiPrimitiveType</code>, <code>PsiClassType</code>, <code>PsiArrayType</code>). Utiliser <code>getCanonicalText()</code> pour l'afficher.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S3 : Obtenir le PSI -->
     <section class="tuto-section" id="s3">
       <div class="section-inner">
         <div class="section-label">Section 3</div>
-        <h2 class="section-title">Les classes PSI pour parcourir le code</h2>
-        <p class="section-lead">
-          Le PSI est l'arbre syntaxique construit automatiquement par IntelliJ pour chaque fichier source.
-          Toute analyse statique consiste à naviguer dans cet arbre.
-        </p>
-
-        <!-- PSI Tree Visual -->
-        <div class="psi-tree-visual" id="psi-tree-visual">
-          <div class="psi-node psi-root">PsiFile / PsiJavaFile</div>
-          <div class="psi-level">
-            <div class="psi-node psi-class">PsiClass</div>
+        <h2 class="section-title">Obtenir le PSI</h2>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">Java</span>
+            <span class="code-file">Obtenir le PSI — recettes</span>
+            <button class="copy-btn" data-target="code-get-psi" aria-label="Copier">📋 Copier</button>
           </div>
-          <div class="psi-level">
-            <div class="psi-node psi-method">PsiMethod</div>
-            <div class="psi-node psi-method">PsiMethod</div>
-          </div>
-          <div class="psi-level">
-            <div class="psi-node psi-stmt">PsiIfStatement</div>
-            <div class="psi-node psi-stmt">PsiForStatement</div>
-            <div class="psi-node psi-stmt">PsiWhileStatement</div>
-            <div class="psi-node psi-var">PsiLocalVariable</div>
-          </div>
-          <div class="psi-level">
-            <div class="psi-node psi-expr">PsiExpression</div>
-            <div class="psi-node psi-expr">PsiPolyadicExpression</div>
-            <div class="psi-node psi-expr">PsiMethodCallExpression</div>
-          </div>
-        </div>
+          <pre class="code-block" id="code-get-psi"><code><span class="java-comment">// ① depuis un événement d'action</span>
+PsiFile file    = e.<span class="java-fn">getData</span>(CommonDataKeys.PSI_FILE);
+Editor editor   = e.<span class="java-fn">getData</span>(CommonDataKeys.EDITOR);
+PsiElement elem = e.<span class="java-fn">getData</span>(CommonDataKeys.PSI_ELEMENT);
 
-        <!-- 3.1 Racines -->
-        <h3 class="subsection-title" id="s3-1">3.1 Classes racines</h3>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead><tr><th>Classe</th><th>Rôle</th></tr></thead>
-            <tbody>
-              <tr><td><code>PsiElement</code></td><td>Interface de base de <strong>tout</strong> nœud de l'arbre PSI. Toutes les classes ci-dessous en héritent.</td></tr>
-              <tr><td><code>PsiFile</code></td><td>Représente un fichier entier.</td></tr>
-              <tr><td><code>PsiJavaFile</code></td><td>Spécialisation de <code>PsiFile</code> pour les fichiers <code>.java</code> — donne accès aux classes qu'il contient.</td></tr>
-            </tbody>
-          </table>
-        </div>
+<span class="java-comment">// ② depuis un VirtualFile</span>
+PsiFile f = PsiManager.<span class="java-fn">getInstance</span>(project).<span class="java-fn">findFile</span>(virtualFile);
 
-        <!-- 3.2 Structure -->
-        <h3 class="subsection-title" id="s3-2">3.2 Structure du code</h3>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead><tr><th>Classe</th><th>Rôle</th></tr></thead>
-            <tbody>
-              <tr><td><code>PsiClass</code></td><td>Une classe Java. <code>.getMethods()</code> retourne ses méthodes déclarées.</td></tr>
-              <tr><td><code>PsiMethod</code></td><td>Une méthode. <code>.getName()</code>, <code>.hasModifierProperty("public")</code>, <code>.getBody()</code> pour son contenu.</td></tr>
-              <tr><td><code>PsiLocalVariable</code></td><td>Une déclaration de variable locale (<code>int x = 5;</code>). <code>.getType()</code>, <code>.getName()</code>.</td></tr>
-              <tr><td><code>PsiDocCommentOwner</code></td><td>Interface implémentée par tout élément pouvant porter un Javadoc. <code>.getDocComment()</code> renvoie <code>null</code> si absent.</td></tr>
-            </tbody>
-          </table>
-        </div>
+<span class="java-comment">// ③ depuis un Document</span>
+PsiFile f2 = PsiDocumentManager.<span class="java-fn">getInstance</span>(project).<span class="java-fn">getPsiFile</span>(document);
 
-        <!-- 3.3 Contrôle -->
-        <h3 class="subsection-title" id="s3-3">3.3 Structures de contrôle</h3>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead><tr><th>Classe</th><th>Rôle</th></tr></thead>
-            <tbody>
-              <tr><td><code>PsiIfStatement</code></td><td>Un <code>if</code> (chaque <code>else if</code> imbriqué compte comme un nœud séparé). <code>.getCondition()</code>.</td></tr>
-              <tr><td><code>PsiWhileStatement</code></td><td>Une boucle <code>while</code>.</td></tr>
-              <tr><td><code>PsiForStatement</code></td><td>Une boucle <code>for</code> classique.</td></tr>
-              <tr><td><code>PsiForeachStatement</code></td><td>Une boucle <code>for (Type x : collection)</code>.</td></tr>
-              <tr><td><code>PsiSwitchStatement</code></td><td>Un <code>switch</code>.</td></tr>
-            </tbody>
-          </table>
-        </div>
+<span class="java-comment">// ④ élément sous le curseur → remonter vers la méthode</span>
+PsiElement leaf = file.<span class="java-fn">findElementAt</span>(editor.<span class="java-fn">getCaretModel</span>().<span class="java-fn">getOffset</span>());
+PsiMethod method = PsiTreeUtil.<span class="java-fn">getParentOfType</span>(leaf, PsiMethod.<span class="java-kw">class</span>);
 
-        <!-- 3.4 Expressions -->
-        <h3 class="subsection-title" id="s3-4">3.4 Expressions</h3>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead><tr><th>Classe</th><th>Rôle</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><code>PsiExpression</code></td>
-                <td>Interface de base de toute expression (une condition, un appel, un calcul).</td>
-              </tr>
-              <tr>
-                <td><code>PsiPolyadicExpression</code></td>
-                <td>
-                  Une expression combinant plusieurs opérandes avec un même opérateur (<code>a &amp;&amp; b &amp;&amp; c</code>).
-                  <code>.getOperationTokenType()</code> (comparer à <code>JavaTokenType.ANDAND</code> / <code>JavaTokenType.OROR</code>, <strong>jamais</strong> par <code>toString()</code>).
-                  <code>.getOperands()</code>.
-                </td>
-              </tr>
-              <tr>
-                <td><code>PsiMethodCallExpression</code></td>
-                <td>
-                  Un appel de méthode (<code>obj.methode(args)</code>).
-                  <code>.resolveMethod()</code> retrouve la déclaration réelle.
-                  <code>.getMethodExpression().getReferenceName()</code> donne le nom brut si la résolution échoue.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+<span class="java-comment">// ⑤ classe par nom qualifié</span>
+PsiClass c = JavaPsiFacade.<span class="java-fn">getInstance</span>(project)
+        .<span class="java-fn">findClass</span>(<span class="java-str">"fr.monequipe.Foo"</span>, GlobalSearchScope.<span class="java-fn">projectScope</span>(project));</code></pre>
         </div>
+        <div class="callout callout-warning">
+          <div class="callout-icon">⚠️</div>
+          <div><code>findElementAt</code> renvoie une <strong>feuille</strong> (souvent un <code>PsiIdentifier</code> ou un token) : toujours remonter avec <code>getParentOfType</code> pour atteindre le nœud voulu.</div>
+        </div>
+      </div>
+    </section>
 
-        <!-- 3.5 Navigation -->
-        <h3 class="subsection-title" id="s3-5">3.5 Navigation dans l'arbre — <code>PsiTreeUtil</code></h3>
-        <div class="callout callout-info">
-          <div class="callout-icon">🗺️</div>
-          <div>
-            <code>PsiTreeUtil</code> (dans <code>com.intellij.psi.util</code>) est la boîte à outils indispensable pour naviguer dans l'arbre PSI.
-          </div>
-        </div>
+    <!-- S4 : Parcourir l'arbre -->
+    <section class="tuto-section alt-bg" id="s4">
+      <div class="section-inner">
+        <div class="section-label">Section 4</div>
+        <h2 class="section-title">Parcourir l'arbre</h2>
+
+        <h3 class="subsection-title">PsiTreeUtil — boîte à outils</h3>
         <div class="table-wrapper">
           <table class="data-table">
             <thead><tr><th>Méthode</th><th>Usage</th></tr></thead>
             <tbody>
-              <tr>
-                <td><code>getParentOfType(element, Classe.class)</code></td>
-                <td>Remonte l'arbre depuis un élément jusqu'à trouver un ancêtre du type demandé (ex. retrouver la méthode qui contient la position du curseur).</td>
-              </tr>
-              <tr>
-                <td><code>findChildrenOfType(element, Classe.class)</code></td>
-                <td>Descend l'arbre depuis un élément et collecte tous les descendants du type demandé (ex. toutes les variables locales d'une méthode).</td>
-              </tr>
+              <tr><td><code>getParentOfType(el, Cls.class)</code></td><td>Premier ancêtre d'un type (ex. méthode englobante)</td></tr>
+              <tr><td><code>findChildrenOfType(el, Cls.class)</code></td><td>Tous les descendants d'un type (collection)</td></tr>
+              <tr><td><code>findChildOfType(el, Cls.class)</code></td><td>Premier descendant d'un type</td></tr>
+              <tr><td><code>getChildrenOfType(el, Cls.class)</code></td><td>Enfants directs d'un type (tableau)</td></tr>
+              <tr><td><code>isAncestor(a, b, strict)</code></td><td>Tester l'inclusion</td></tr>
+              <tr><td><code>getNextSiblingOfType / getPrevSiblingOfType</code></td><td>Frères</td></tr>
+              <tr><td><code>collectElements(file, filter)</code></td><td>Collecter avec un filtre</td></tr>
             </tbody>
           </table>
         </div>
-      </div>
-    </section>
 
-    <!-- S4 Système -->
-    <section class="tuto-section alt-bg" id="s4">
-      <div class="section-inner">
-        <div class="section-label">Section 4</div>
-        <h2 class="section-title">Les classes système (hors PSI)</h2>
-        <p class="section-lead">
-          Ces classes ne représentent pas le code source lui-même, mais le <strong>contexte d'exécution</strong>
-          du plugin dans l'IDE.
-        </p>
-        <div class="system-cards" id="system-cards">
-          <div class="sys-card">
-            <code class="sys-class">Project</code>
-            <p>Le projet actuellement ouvert dans l'IDE. Requis par presque toutes les API (popups, ToolWindow...).</p>
+        <h3 class="subsection-title">Visiteurs — pattern Visitor</h3>
+        <div class="ep-grid">
+          <div class="ep-card">
+            <div class="ep-tag">JavaElementVisitor</div>
+            <p>Non récursif — on décide quand descendre. Utilisé dans les <strong>inspections</strong> (<code>buildVisitor</code>). Appeler <code>super.visitXxx(node)</code> pour continuer à descendre.</p>
           </div>
-          <div class="sys-card">
-            <code class="sys-class">Editor</code>
-            <p><code>.getCaretModel().getOffset()</code> donne la position du curseur en nombre de caractères depuis le début du fichier.</p>
+          <div class="ep-card">
+            <div class="ep-tag">JavaRecursiveElementVisitor</div>
+            <p>Descend <strong>automatiquement</strong> dans tout l'arbre. Pratique mais peut causer un débordement de pile sur de très gros fichiers.</p>
           </div>
-          <div class="sys-card">
-            <code class="sys-class">AnActionEvent</code>
-            <p>L'événement transmis à <code>actionPerformed()</code>. Point d'entrée pour récupérer le contexte.</p>
+          <div class="ep-card">
+            <div class="ep-tag ep-tag-advanced">JavaRecursiveElementWalkingVisitor</div>
+            <p>Variante <strong>itérative</strong> (pas de récursion) — <strong>recommandée</strong> pour les gros parcours. Usage : <code>element.accept(visitor)</code>.</p>
           </div>
-          <div class="sys-card">
-            <code class="sys-class">CommonDataKeys</code>
-            <p>Fournit les clés standard pour extraire des données de l'événement : <code>EDITOR</code>, <code>PSI_FILE</code>, <code>PROJECT</code>. Usage : <code>e.getData(CommonDataKeys.EDITOR)</code>.</p>
-          </div>
-          <div class="sys-card">
-            <code class="sys-class">PsiManager</code>
-            <p>Point d'entrée pour obtenir le <code>PsiFile</code> d'un fichier à partir d'un <code>VirtualFile</code> (utile hors contexte d'une action, ex. dans un <code>postStartupActivity</code>).</p>
+        </div>
+        <div class="callout callout-info">
+          <div class="callout-icon">🔑</div>
+          <div>
+            <strong>Pattern à retenir :</strong> surcharger <code>visitXxx(PsiXxx node)</code>, faire son traitement, puis appeler
+            <code>super.visitXxx(node)</code> pour continuer à descendre (omettre = couper la branche).
           </div>
         </div>
       </div>
     </section>
 
-    <!-- S5 Affichage -->
+    <!-- S5 : Exemple variables -->
     <section class="tuto-section" id="s5">
       <div class="section-inner">
         <div class="section-label">Section 5</div>
-        <h2 class="section-title">Où afficher les résultats</h2>
-        <p class="section-lead">Quatre options, du plus simple au plus intégré.</p>
-
-        <div class="display-options" id="display-options">
-
-          <div class="display-option" id="do-popup">
-            <div class="do-header">
-              <span class="do-number">5.1</span>
-              <span class="do-name">Popup bloquante — <code>Messages</code></span>
-              <span class="do-badge do-simple">Simple</span>
-            </div>
-            <p>Simple, bloque l'utilisateur (il doit fermer la popup). Bon pour prototyper vite, pas pour un usage final.</p>
-            <div class="code-block-wrapper">
-              <div class="code-header">
-                <span class="code-lang">Java</span>
-                <button class="copy-btn" data-target="code-popup" aria-label="Copier">📋 Copier</button>
-              </div>
-              <pre class="code-block" id="code-popup"><code>Messages.<span class="java-fn">showInfoMessage</span>(project, <span class="java-str">"Contenu"</span>, <span class="java-str">"Titre"</span>);</code></pre>
-            </div>
-          </div>
-
-          <div class="display-option" id="do-toolwindow">
-            <div class="do-header">
-              <span class="do-number">5.2</span>
-              <span class="do-name">ToolWindow — panneau persistant</span>
-              <span class="do-badge do-recommended">⭐ Recommandé</span>
-            </div>
-            <p>
-              Déjà en place (<code>MyToolWindowFactory</code>). Permet d'afficher un résultat structuré
-              (liste, arbre, futur graphe) sans bloquer l'utilisateur, et de le garder visible en continu
-              pendant qu'il travaille. C'est l'endroit recommandé pour afficher le graphe de flot de contrôle.
-            </p>
-          </div>
-
-          <div class="display-option" id="do-inspection">
-            <div class="do-header">
-              <span class="do-number">5.3</span>
-              <span class="do-name">Soulignement dans l'éditeur — <code>localInspection</code></span>
-              <span class="do-badge do-auto">Automatique</span>
-            </div>
-            <p>
-              Ne nécessite aucun clic. Le résultat apparaît directement sous le code concerné,
-              avec une infobulle au survol (<code>holder.registerProblem(element, message)</code>).
-              Adapté pour un retour immédiat et localisé.
-            </p>
-          </div>
-
-          <div class="display-option" id="do-notif">
-            <div class="do-header">
-              <span class="do-number">5.4</span>
-              <span class="do-name">Notification non bloquante — <code>NotificationGroup</code></span>
-              <span class="do-badge do-simple">Discret</span>
-            </div>
-            <p>
-              Ballon discret en bas à droite. Adapté pour un résultat qui arrive après un traitement
-              un peu long, sans interrompre l'utilisateur.
-            </p>
-            <div class="code-block-wrapper">
-              <div class="code-header">
-                <span class="code-lang">Java</span>
-                <button class="copy-btn" data-target="code-notif" aria-label="Copier">📋 Copier</button>
-              </div>
-              <pre class="code-block" id="code-notif"><code>NotificationGroupManager.<span class="java-fn">getInstance</span>()
-    .<span class="java-fn">getNotificationGroup</span>(<span class="java-str">"SAE Notifications"</span>)
-    .<span class="java-fn">createNotification</span>(<span class="java-str">"Titre"</span>, <span class="java-str">"Contenu"</span>, NotificationType.INFORMATION)
-    .<span class="java-fn">notify</span>(project);</code></pre>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- S6 Exemple -->
-    <section class="tuto-section alt-bg" id="s6">
-      <div class="section-inner">
-        <div class="section-label">Section 6</div>
-        <h2 class="section-title">Exemple complet : détection de conditions composées</h2>
-        <p class="section-lead">
-          Cet exemple illustre comment tous les éléments s'articulent ensemble —
-          c'est l'inspection déjà implémentée dans le projet.
-        </p>
+        <h2 class="section-title">Exemple complet : lister les variables d'une méthode</h2>
         <div class="callout callout-info">
-          <div class="callout-icon">💡</div>
+          <div class="callout-icon">📌</div>
           <div>
-            Le visiteur (<code>JavaElementVisitor</code>) descend automatiquement tout l'arbre PSI du fichier ;
-            chaque <code>visitXxx()</code> redéfini est appelé par IntelliJ à chaque nœud du type correspondant
-            rencontré, <strong>sans que vous ayez à écrire vous-même la boucle de parcours</strong>.
+            Les <strong>paramètres</strong> ne sont pas dans le corps de la méthode. Les variables de <strong>for-each, catch, lambda</strong> sont des <code>PsiParameter</code>, pas des <code>PsiLocalVariable</code>. Ne pas descendre dans les classes locales/anonymes.
           </div>
         </div>
-
-        <div class="code-block-wrapper" id="example-java">
+        <div class="code-block-wrapper">
           <div class="code-header">
             <span class="code-lang">Java</span>
-            <span class="code-file">ComplexConditionInspection.java</span>
-            <button class="copy-btn" data-target="code-example-java" aria-label="Copier">📋 Copier</button>
+            <span class="code-file">VariableCollector.java</span>
+            <button class="copy-btn" data-target="code-var-collector" aria-label="Copier">📋 Copier</button>
           </div>
-          <pre class="code-block" id="code-example-java"><code><span class="java-kw">package</span> fr.umontpellier.iut;
+          <pre class="code-block" id="code-var-collector"><code><span class="java-kw">public final class</span> <span class="java-class">VariableCollector</span> {
 
-<span class="java-kw">import</span> com.intellij.codeInspection.AbstractBaseJavaLocalInspectionTool;
-<span class="java-kw">import</span> com.intellij.codeInspection.ProblemsHolder;
-<span class="java-kw">import</span> com.intellij.psi.*;
-<span class="java-kw">import</span> com.intellij.psi.tree.IElementType;
-<span class="java-kw">import</span> org.jetbrains.annotations.NotNull;
-<span class="java-kw">import</span> java.util.ArrayList;
-<span class="java-kw">import</span> java.util.List;
+    <span class="java-kw">public record</span> <span class="java-class">VarInfo</span>(String name, String type, String kind, <span class="java-kw">int</span> line, PsiVariable psi) {}
 
-<span class="java-kw">public class</span> <span class="java-class">ComplexConditionInspection</span> <span class="java-kw">extends</span> <span class="java-class">AbstractBaseJavaLocalInspectionTool</span> {
+    <span class="java-kw">public static</span> List&lt;VarInfo&gt; <span class="java-fn">collect</span>(PsiMethod method) {
+        List&lt;VarInfo&gt; result = <span class="java-kw">new</span> ArrayList&lt;&gt;();
+        Document doc = PsiDocumentManager.<span class="java-fn">getInstance</span>(method.<span class="java-fn">getProject</span>())
+                .<span class="java-fn">getDocument</span>(method.<span class="java-fn">getContainingFile</span>());
 
-    <span class="java-ann">@Override</span>
-    <span class="java-kw">public</span> <span class="java-ann">@NotNull</span> PsiElementVisitor <span class="java-fn">buildVisitor</span>(<span class="java-ann">@NotNull</span> ProblemsHolder holder, <span class="java-kw">boolean</span> isOnTheFly) {
-        <span class="java-kw">return new</span> <span class="java-class">JavaElementVisitor</span>() {
-            <span class="java-ann">@Override</span>
-            <span class="java-kw">public void</span> <span class="java-fn">visitIfStatement</span>(PsiIfStatement statement) {
-                <span class="java-kw">super</span>.<span class="java-fn">visitIfStatement</span>(statement);
-                <span class="java-fn">checkCondition</span>(statement.<span class="java-fn">getCondition</span>(), statement, holder);
-            }
-
-            <span class="java-ann">@Override</span>
-            <span class="java-kw">public void</span> <span class="java-fn">visitWhileStatement</span>(PsiWhileStatement statement) {
-                <span class="java-kw">super</span>.<span class="java-fn">visitWhileStatement</span>(statement);
-                <span class="java-fn">checkCondition</span>(statement.<span class="java-fn">getCondition</span>(), statement, holder);
-            }
-        };
-    }
-
-    <span class="java-kw">private void</span> <span class="java-fn">checkCondition</span>(PsiExpression condition, PsiElement statement, ProblemsHolder holder) {
-        <span class="java-kw">if</span> (condition == <span class="java-kw">null</span>) <span class="java-kw">return</span>;
-        <span class="java-kw">if</span> (!(condition <span class="java-kw">instanceof</span> PsiPolyadicExpression)) <span class="java-kw">return</span>;
-
-        PsiPolyadicExpression polyadic = (PsiPolyadicExpression) condition;
-        IElementType operator = polyadic.<span class="java-fn">getOperationTokenType</span>();
-
-        <span class="java-kw">boolean</span> isAnd = operator == JavaTokenType.ANDAND;
-        <span class="java-kw">boolean</span> isOr  = operator == JavaTokenType.OROR;
-        <span class="java-kw">if</span> (!isAnd &amp;&amp; !isOr) <span class="java-kw">return</span>;
-
-        String operatorSymbol = isAnd ? <span class="java-str">"&amp;&amp;"</span> : <span class="java-str">"||"</span>;
-        PsiExpression[] operands = polyadic.<span class="java-fn">getOperands</span>();
-        <span class="java-kw">if</span> (operands.length &lt; 2) <span class="java-kw">return</span>;
-
-        List&lt;String&gt; conditionTexts = <span class="java-kw">new</span> ArrayList&lt;&gt;();
-        <span class="java-kw">for</span> (PsiExpression operand : operands) {
-            conditionTexts.<span class="java-fn">add</span>(operand.<span class="java-fn">getText</span>());
+        <span class="java-comment">// 1. paramètres de la méthode (hors du corps)</span>
+        <span class="java-kw">for</span> (PsiParameter p : method.<span class="java-fn">getParameterList</span>().<span class="java-fn">getParameters</span>()) {
+            result.<span class="java-fn">add</span>(<span class="java-fn">info</span>(p, <span class="java-str">"paramètre"</span>, doc));
         }
 
-        String message = <span class="java-str">"Condition composée ("</span> + operands.length + <span class="java-str">" conditions atomiques via "</span>
-                + operatorSymbol + <span class="java-str">") : "</span> + String.<span class="java-fn">join</span>(<span class="java-str">" ; "</span>, conditionTexts)
-                + <span class="java-str">" — vérifiez la couverture MC/DC."</span>;
+        <span class="java-comment">// 2. variables du corps</span>
+        PsiCodeBlock body = method.<span class="java-fn">getBody</span>();
+        <span class="java-kw">if</span> (body == <span class="java-kw">null</span>) <span class="java-kw">return</span> result;  <span class="java-comment">// méthode abstraite ou native</span>
 
-        holder.<span class="java-fn">registerProblem</span>(statement, message);
+        body.<span class="java-fn">accept</span>(<span class="java-kw">new</span> <span class="java-class">JavaRecursiveElementWalkingVisitor</span>() {
+            <span class="java-ann">@Override</span>
+            <span class="java-kw">public void</span> <span class="java-fn">visitClass</span>(<span class="java-ann">@NotNull</span> PsiClass aClass) {
+                <span class="java-comment">// ne pas descendre dans classes locales/anonymes</span>
+            }
+
+            <span class="java-ann">@Override</span>
+            <span class="java-kw">public void</span> <span class="java-fn">visitLocalVariable</span>(<span class="java-ann">@NotNull</span> PsiLocalVariable v) {
+                result.<span class="java-fn">add</span>(<span class="java-fn">info</span>(v, <span class="java-str">"locale"</span>, doc));
+                <span class="java-kw">super</span>.<span class="java-fn">visitLocalVariable</span>(v);  <span class="java-comment">// descendre dans l'initialiseur (lambda possible)</span>
+            }
+
+            <span class="java-ann">@Override</span>
+            <span class="java-kw">public void</span> <span class="java-fn">visitParameter</span>(<span class="java-ann">@NotNull</span> PsiParameter p) {
+                <span class="java-comment">// for-each, catch, paramètre de lambda</span>
+                result.<span class="java-fn">add</span>(<span class="java-fn">info</span>(p, <span class="java-str">"paramètre interne"</span>, doc));
+                <span class="java-kw">super</span>.<span class="java-fn">visitParameter</span>(p);
+            }
+        });
+        <span class="java-kw">return</span> result;
+    }
+
+    <span class="java-kw">private static</span> VarInfo <span class="java-fn">info</span>(PsiVariable v, String kind, Document doc) {
+        <span class="java-kw">int</span> line = doc == <span class="java-kw">null</span> ? -1 : doc.<span class="java-fn">getLineNumber</span>(v.<span class="java-fn">getTextOffset</span>()) + 1;
+        <span class="java-kw">return new</span> <span class="java-class">VarInfo</span>(v.<span class="java-fn">getName</span>(), v.<span class="java-fn">getType</span>().<span class="java-fn">getPresentableText</span>(), kind, line, v);
     }
 }</code></pre>
         </div>
+      </div>
+    </section>
 
+    <!-- S6 : Conditions atomiques -->
+    <section class="tuto-section alt-bg" id="s6">
+      <div class="section-inner">
+        <div class="section-label">Section 6</div>
+        <h2 class="section-title">Exemple : extraire les conditions atomiques (MC/DC)</h2>
+        <p class="section-lead">
+          Décompose <code>(a &amp;&amp; b) || !c</code> en conditions atomiques <code>[a, b, c]</code>,
+          en traversant récursivement les opérateurs logiques et les négations.
+        </p>
         <div class="code-block-wrapper">
           <div class="code-header">
-            <span class="code-lang">XML</span>
-            <span class="code-file">plugin.xml — déclaration de l'inspection</span>
-            <button class="copy-btn" data-target="code-example-xml" aria-label="Copier">📋 Copier</button>
+            <span class="code-lang">Java</span>
+            <span class="code-file">ConditionUtil.java</span>
+            <button class="copy-btn" data-target="code-conditions" aria-label="Copier">📋 Copier</button>
           </div>
-          <pre class="code-block" id="code-example-xml"><code><span class="xml-tag">&lt;extensions</span> <span class="xml-attr">defaultExtensionNs</span>=<span class="xml-str">"com.intellij"</span><span class="xml-tag">&gt;</span>
-    <span class="xml-tag">&lt;localInspection</span>
-        <span class="xml-attr">language</span>=<span class="xml-str">"JAVA"</span>
-        <span class="xml-attr">displayName</span>=<span class="xml-str">"Condition composée (MC/DC)"</span>
-        <span class="xml-attr">groupName</span>=<span class="xml-str">"SAE - Analyse de couverture"</span>
-        <span class="xml-attr">enabledByDefault</span>=<span class="xml-str">"true"</span>
-        <span class="xml-attr">level</span>=<span class="xml-str">"WARNING"</span>
-        <span class="xml-attr">implementationClass</span>=<span class="xml-str">"fr.umontpellier.iut.ComplexConditionInspection"</span><span class="xml-tag">/&gt;</span>
-<span class="xml-tag">&lt;/extensions&gt;</span></code></pre>
+          <pre class="code-block" id="code-conditions"><code><span class="java-kw">public final class</span> <span class="java-class">ConditionUtil</span> {
+
+    <span class="java-comment">/** Décompose (a &amp;&amp; b) || !c en [a, b, c] */</span>
+    <span class="java-kw">public static void</span> <span class="java-fn">atomicConditions</span>(<span class="java-ann">@Nullable</span> PsiExpression expr, List&lt;PsiExpression&gt; out) {
+        expr = PsiUtil.<span class="java-fn">skipParenthesizedExprDown</span>(expr);
+        <span class="java-kw">if</span> (expr == <span class="java-kw">null</span>) <span class="java-kw">return</span>;
+
+        <span class="java-kw">if</span> (expr <span class="java-kw">instanceof</span> <span class="java-class">PsiPolyadicExpression</span> poly) {
+            IElementType op = poly.<span class="java-fn">getOperationTokenType</span>();
+            <span class="java-kw">if</span> (op == JavaTokenType.ANDAND || op == JavaTokenType.OROR) {
+                <span class="java-kw">for</span> (PsiExpression operand : poly.<span class="java-fn">getOperands</span>())
+                    <span class="java-fn">atomicConditions</span>(operand, out);
+                <span class="java-kw">return</span>;
+            }
+        }
+        <span class="java-kw">if</span> (expr <span class="java-kw">instanceof</span> <span class="java-class">PsiPrefixExpression</span> prefix
+                &amp;&amp; prefix.<span class="java-fn">getOperationTokenType</span>() == JavaTokenType.EXCL) {
+            <span class="java-fn">atomicConditions</span>(prefix.<span class="java-fn">getOperand</span>(), out);
+            <span class="java-kw">return</span>;
+        }
+        out.<span class="java-fn">add</span>(expr);  <span class="java-comment">// condition atomique</span>
+    }
+
+    <span class="java-comment">/** Toutes les décisions (if, while, for, do, ternaire) d'une méthode */</span>
+    <span class="java-kw">public static</span> List&lt;PsiExpression&gt; <span class="java-fn">decisions</span>(PsiMethod method) {
+        List&lt;PsiExpression&gt; res = <span class="java-kw">new</span> ArrayList&lt;&gt;();
+        method.<span class="java-fn">accept</span>(<span class="java-kw">new</span> <span class="java-class">JavaRecursiveElementWalkingVisitor</span>() {
+            <span class="java-ann">@Override</span> <span class="java-kw">public void</span> <span class="java-fn">visitIfStatement</span>(<span class="java-ann">@NotNull</span> PsiIfStatement s)
+                { <span class="java-fn">add</span>(s.<span class="java-fn">getCondition</span>()); <span class="java-kw">super</span>.<span class="java-fn">visitIfStatement</span>(s); }
+            <span class="java-ann">@Override</span> <span class="java-kw">public void</span> <span class="java-fn">visitWhileStatement</span>(<span class="java-ann">@NotNull</span> PsiWhileStatement s)
+                { <span class="java-fn">add</span>(s.<span class="java-fn">getCondition</span>()); <span class="java-kw">super</span>.<span class="java-fn">visitWhileStatement</span>(s); }
+            <span class="java-ann">@Override</span> <span class="java-kw">public void</span> <span class="java-fn">visitForStatement</span>(<span class="java-ann">@NotNull</span> PsiForStatement s)
+                { <span class="java-fn">add</span>(s.<span class="java-fn">getCondition</span>()); <span class="java-kw">super</span>.<span class="java-fn">visitForStatement</span>(s); }
+            <span class="java-ann">@Override</span> <span class="java-kw">public void</span> <span class="java-fn">visitConditionalExpression</span>(<span class="java-ann">@NotNull</span> PsiConditionalExpression e)
+                { <span class="java-fn">add</span>(e.<span class="java-fn">getCondition</span>()); <span class="java-kw">super</span>.<span class="java-fn">visitConditionalExpression</span>(e); }
+            <span class="java-kw">private void</span> <span class="java-fn">add</span>(PsiExpression c) { <span class="java-kw">if</span> (c != <span class="java-kw">null</span>) res.<span class="java-fn">add</span>(c); }
+        });
+        <span class="java-kw">return</span> res;
+    }
+}</code></pre>
         </div>
       </div>
     </section>
 
-    <!-- S7 plugin.xml structure -->
+    <!-- S7 : Résolution -->
     <section class="tuto-section" id="s7">
       <div class="section-inner">
         <div class="section-label">Section 7</div>
-        <h2 class="section-title">Structure générale d'un <code>plugin.xml</code></h2>
+        <h2 class="section-title">Résolution et recherche</h2>
         <div class="code-block-wrapper">
           <div class="code-header">
-            <span class="code-lang">XML</span>
-            <span class="code-file">plugin.xml — structure complète</span>
-            <button class="copy-btn" data-target="code-full-plugin" aria-label="Copier">📋 Copier</button>
+            <span class="code-lang">Java</span>
+            <span class="code-file">Résolution de symboles</span>
+            <button class="copy-btn" data-target="code-resolve" aria-label="Copier">📋 Copier</button>
           </div>
-          <pre class="code-block" id="code-full-plugin"><code><span class="xml-tag">&lt;idea-plugin&gt;</span>
-    <span class="xml-tag">&lt;id&gt;</span><span class="xml-val">fr.umontpellier.iut.sae</span><span class="xml-tag">&lt;/id&gt;</span>
-    <span class="xml-tag">&lt;name&gt;</span><span class="xml-val">Nom du plugin</span><span class="xml-tag">&lt;/name&gt;</span>
-    <span class="xml-tag">&lt;vendor&gt;</span><span class="xml-val">Votre équipe</span><span class="xml-tag">&lt;/vendor&gt;</span>
+          <pre class="code-block" id="code-resolve"><code><span class="java-comment">// Résoudre un appel de méthode</span>
+PsiMethod target = call.<span class="java-fn">resolveMethod</span>();           <span class="java-comment">// null si non résolu</span>
 
-    <span class="xml-comment">&lt;!-- Déclare les modules IntelliJ requis --&gt;</span>
-    <span class="xml-tag">&lt;depends&gt;</span><span class="xml-val">com.intellij.modules.platform</span><span class="xml-tag">&lt;/depends&gt;</span>
-    <span class="xml-tag">&lt;depends&gt;</span><span class="xml-val">com.intellij.modules.java</span><span class="xml-tag">&lt;/depends&gt;</span>
+<span class="java-comment">// Résoudre une référence quelconque</span>
+PsiElement decl = refExpr.<span class="java-fn">resolve</span>();
 
-    <span class="xml-tag">&lt;extensions</span> <span class="xml-attr">defaultExtensionNs</span>=<span class="xml-str">"com.intellij"</span><span class="xml-tag">&gt;</span>
-        <span class="xml-comment">&lt;!-- localInspection, toolWindow, postStartupActivity, notificationGroup ici --&gt;</span>
-    <span class="xml-tag">&lt;/extensions&gt;</span>
+<span class="java-comment">// Usages d'un élément dans le projet</span>
+Collection&lt;PsiReference&gt; usages = ReferencesSearch
+        .<span class="java-fn">search</span>(psiVariable, GlobalSearchScope.<span class="java-fn">projectScope</span>(project)).<span class="java-fn">findAll</span>();
 
-    <span class="xml-tag">&lt;actions&gt;</span>
-        <span class="xml-comment">&lt;!-- vos actions ici --&gt;</span>
-    <span class="xml-tag">&lt;/actions&gt;</span>
-<span class="xml-tag">&lt;/idea-plugin&gt;</span></code></pre>
+<span class="java-comment">// Sous-classes</span>
+Collection&lt;PsiClass&gt; subs = ClassInheritorsSearch.<span class="java-fn">search</span>(psiClass).<span class="java-fn">findAll</span>();
+
+<span class="java-comment">// Super-méthodes</span>
+PsiMethod[] supers = method.<span class="java-fn">findSuperMethods</span>();
+
+<span class="java-comment">// Classe par nom court</span>
+PsiShortNamesCache.<span class="java-fn">getInstance</span>(project).<span class="java-fn">getClassesByName</span>(<span class="java-str">"Foo"</span>, scope);</code></pre>
         </div>
         <div class="callout callout-warning">
           <div class="callout-icon">⚠️</div>
           <div>
-            <strong><code>&lt;depends&gt;com.intellij.modules.java&lt;/depends&gt;</code></strong> est indispensable
-            dès que vous utilisez une classe PSI spécifique à Java (<code>PsiMethod</code>, <code>PsiIfStatement</code>, etc.) —
-            sans elle, la compilation échoue avec une erreur "cannot find symbol" même si l'import est correct,
-            car ces classes appartiennent au plugin Java, pas au cœur de la plateforme.
+            <code>resolve()</code> peut renvoyer <code>null</code> (code incomplet, dépendance absente, indexation en cours — <em>dumb mode</em>) : <strong>toujours tester avant d'utiliser le résultat</strong>.<br/>
+            <strong>Scopes disponibles :</strong> <code>projectScope(project)</code>, <code>allScope(project)</code> (avec bibliothèques), <code>moduleScope(module)</code>, <code>fileScope(...)</code>.
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- S8 : Modifier -->
+    <section class="tuto-section alt-bg" id="s8">
+      <div class="section-inner">
+        <div class="section-label">Section 8</div>
+        <h2 class="section-title">Modifier le code — Write Action</h2>
+        <div class="callout callout-warning">
+          <div class="callout-icon">✏️</div>
+          <div>
+            Toute modification du PSI doit être dans une <strong>write action</strong> et, pour être annulable (<kbd>Ctrl+Z</kbd>),
+            dans une <strong>commande</strong>. La SAE est surtout en lecture — éviter de modifier le code utilisateur sauf pour des quick-fixes.
+          </div>
+        </div>
+        <div class="code-block-wrapper">
+          <div class="code-header">
+            <span class="code-lang">Java</span>
+            <span class="code-file">Write action + PsiElementFactory</span>
+            <button class="copy-btn" data-target="code-write" aria-label="Copier">📋 Copier</button>
+          </div>
+          <pre class="code-block" id="code-write"><code>WriteCommandAction.<span class="java-fn">runWriteCommandAction</span>(project, <span class="java-str">"Ajouter trace"</span>, <span class="java-kw">null</span>, () -&gt; {
+    PsiElementFactory factory = JavaPsiFacade.<span class="java-fn">getElementFactory</span>(project);
+    PsiStatement st = factory.<span class="java-fn">createStatementFromText</span>(
+            <span class="java-str">"System.out.println(\"enter\");"</span>, method);
+    PsiCodeBlock body = method.<span class="java-fn">getBody</span>();
+    body.<span class="java-fn">addAfter</span>(st, body.<span class="java-fn">getLBrace</span>());
+    <span class="java-comment">// Reformater après insertion</span>
+    CodeStyleManager.<span class="java-fn">getInstance</span>(project).<span class="java-fn">reformat</span>(method);
+    <span class="java-comment">// Raccourcir les noms de classes importées</span>
+    JavaCodeStyleManager.<span class="java-fn">getInstance</span>(project).<span class="java-fn">shortenClassReferences</span>(method);
+}, method.<span class="java-fn">getContainingFile</span>());</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- S9 : Pièges -->
+    <section class="tuto-section" id="s9">
+      <div class="section-inner">
+        <div class="section-label">Section 9</div>
+        <h2 class="section-title">Outils &amp; Pièges PSI</h2>
+
+        <h3 class="subsection-title">Outils pour explorer le PSI</h3>
+        <div class="debug-card">
+          <div class="debug-icon">🔎</div>
+          <div class="debug-content">
+            <strong>PSI Viewer</strong> (<em>Tools → View PSI Structure of Current File</em>) — affiche l'arbre PSI du fichier courant.
+            Disponible dans l'IDE sandbox avec l'option JVM <code>-Didea.is.internal=true</code> dans la configuration <code>runIde</code>.
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Pièges à connaître</h3>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Piège</th><th>Explication</th><th>Parade</th></tr></thead>
+            <tbody>
+              <tr><td>Garder un <code>PsiElement</code> longtemps</td><td>Le PSI peut devenir invalide après une modification du fichier</td><td><code>SmartPointerManager.createPointer(el)</code> ; tester <code>el.isValid()</code></td></tr>
+              <tr><td>Lire le PSI hors read action</td><td>Exception de threading</td><td><code>ReadAction.compute(...)</code></td></tr>
+              <tr><td>Document pas commité</td><td>Le PSI ne reflète pas encore le texte tapé</td><td><code>PsiDocumentManager.commitAllDocuments()</code></td></tr>
+              <tr><td><code>a &amp;&amp; b &amp;&amp; c</code> vu comme binaires imbriqués</td><td>C'est un <code>PsiPolyadicExpression</code></td><td>Tester <code>instanceof PsiPolyadicExpression</code>, utiliser <code>getOperands()</code></td></tr>
+              <tr><td>Parenthèses oubliées</td><td><code>(a &amp;&amp; b)</code> est un nœud <code>PsiParenthesizedExpression</code></td><td><code>PsiUtil.skipParenthesizedExprDown</code></td></tr>
+              <tr><td>Méthode sans corps</td><td><code>getBody()</code> est <code>null</code> pour <code>abstract</code>/<code>native</code>/interface</td><td>Tester <code>null</code></td></tr>
+              <tr><td><code>resolve()</code> renvoie <code>null</code></td><td>Code en erreur, dépendance non indexée, dumb mode</td><td>Gérer le cas ; attendre le smart mode</td></tr>
+              <tr><td>Offsets texte vs lignes</td><td><code>getTextOffset()</code> est un offset caractère, pas une ligne</td><td><code>document.getLineNumber(offset)</code> (base 0)</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- ── FOOTER ── -->
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-brand">
-        <span>⚙️</span>
-        <span>IntelliJ Plugin — Annexe</span>
-      </div>
+      <div class="footer-brand"><span>📖</span><span>Analyse Statique — PSI</span></div>
       <div class="footer-links">
-        <a href="index.html">← Retour au tutoriel</a>
-        <a href="https://plugins.jetbrains.com/docs/intellij/getting-started.html" target="_blank" rel="noopener">Documentation JetBrains ↗</a>
+        <a href="index.html">← Tutoriel</a>
+        <a href="dynamique.html">⚡ Analyse Dynamique →</a>
+        <a href="extensions.html">🔌 Extensions →</a>
+        <a href="https://plugins.jetbrains.com/docs/intellij/psi.html" target="_blank" rel="noopener">Doc JetBrains PSI ↗</a>
       </div>
-      <div class="footer-credits">
-        Saksouk Mahdi &amp; Aubert Florian — IUT Informatique, SAE A3-S5
-      </div>
+      <div class="footer-credits">Saksouk Mahdi &amp; Aubert Florian — IUT Informatique, SAE A3-S5</div>
     </div>
   </footer>
 
